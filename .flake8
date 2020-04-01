@@ -1,0 +1,4 @@
+[flake8]
+# match black style
+max-line-length = 88
+exclude = .git,__pycache__,dist

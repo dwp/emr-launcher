@@ -9,6 +9,7 @@ help:
 .PHONY: bootstrap
 bootstrap: ## Bootstrap local environment for first use
 	make git-hooks
+	pip install --user pipenv
 
 .PHONY: git-hooks
 git-hooks: ## Set up hooks in .git/hooks
@@ -22,3 +23,19 @@ git-hooks: ## Set up hooks in .git/hooks
 			ln -s -f ../../.githooks/$${hook} $${HOOK_DIR}/$${hook}; \
 		done \
 	}
+
+.PHONY: clean
+clean:
+	rm -rf dist
+	rm -rf emr-launcher.zip
+
+emr-launcher.zip: clean
+	mkdir -p dist
+	cp emr_launcher.py dist
+	pipenv install && \
+	VENV=$$(pipenv --venv | grep emr-launcher) && \
+	cp -rf $${VENV}/lib/python3.7/site-packages/* dist/
+	cd dist && zip -qr ../$@ .
+
+.PHONY: zip
+zip: emr-launcher.zip

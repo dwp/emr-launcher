@@ -1,0 +1,25 @@
+# https://docs.aws.amazon.com/emr/latest/APIReference/API_RunJobFlow.html
+Name: mycluster
+JobFlowRole: myjobflowrole
+ServiceRole: myservicerole
+ReleaseLabel: emr-5.24.1
+Applications:
+- Name: HBase
+- Name: Hive
+- Name: Spark
+VisibleToAllUsers: True
+Tags:
+- Key: Application
+  Value: analytical-dataset-generation
+- Key: CreatedBy
+  Value: emr_launcher
+- Key: Environment
+  Value: development
+- Key: Name
+  Value: analytical-dataset-generation
+- Key: Owner
+  Value: Matt
+- Key: Persistence
+  Value: Ignore
+- Key: SSMEnabled
+  Value: 'True'
