@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import logging
 import os
@@ -7,7 +7,7 @@ import boto3
 import yaml
 import ast
 import re
-from pythonjsonlogger import jsonlogger
+#from pythonjsonlogger import jsonlogger
 
 
 def configure_log():
@@ -20,10 +20,10 @@ def configure_log():
     logger = logging.getLogger("emr_launcher")
     logger.propagate = False
     console_handler = logging.StreamHandler()
-    formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-    )
-    console_handler.setFormatter(formatter)
+    #formatter = jsonlogger.JsonFormatter(
+    #    "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+    #)
+    #console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     return logger
 
@@ -35,7 +35,7 @@ def read_s3_config(bucket: str, key: str, secrets: dict, required: bool = True) 
         response = s3_client.get_object(Bucket=bucket, Key=key)
         with open(key, "w") as f:
             f.write(response["Body"])
-        config = read_local_config(config_file=key, secrets=secrets)
+        config = read_local_config(config_file=key, secrets=secrets, required=required)
     except:
         raise
 
@@ -44,7 +44,7 @@ def read_s3_config(bucket: str, key: str, secrets: dict, required: bool = True) 
 
 def read_local_config(config_file: str, secrets: dict, required: bool = True) -> dict:
     config = {}
-    replace_values(config_file, secrets)
+    replace_values(config_file, secrets, required)
     try:
         with open(config_file, "r") as in_file:
             config = yaml.safe_load(in_file)
@@ -62,13 +62,19 @@ def fetch_secrets(secret_name: str, region_name: str) -> dict:
     response = client.get_secret_value(SecretId=secret_name)
     return ast.literal_eval(response["SecretString"])
 
-def replace_values(config_file: str, secrets: dict):
+def replace_values(config_file: str, secrets: dict, required: bool = True):
     variables = []
     file_contents = ""
-    with open(config_file, "r") as f:
-        file_contents = f.readlines()
-    variables = re.findall(" \$[A-Z_]+", file_contents)
-    for var in variables:
+    try:
+        with open(config_file, "r") as f:
+            file_contents = f.read()
+    except FileNotFoundError:
+        if required:
+            raise
+        else:
+            return
+    variables = re.findall("\$[A-Z_]+", file_contents)
+    for var in variables:   
         file_contents = file_contents.replace(var, secrets.get(var[1:]))
     with open(config_file, "w") as f:
         f.write(file_contents)
