@@ -1,25 +1,22 @@
-# https://docs.aws.amazon.com/emr/latest/APIReference/API_RunJobFlow.html
-Name: mycluster
-JobFlowRole: myjobflowrole
-ServiceRole: myservicerole
-ReleaseLabel: emr-5.24.1
+---
 Applications:
-- Name: HBase
-- Name: Hive
-- Name: Spark
-VisibleToAllUsers: True
+- Args:
+  - string
+  Name: string
+  Version: string
+Configurations:
+- Classification: string
+  Configurations:
+  - Configuration
+  Properties:
+    string: string
+CustomAmiId: string
+EbsRootVolumeSize: 1
+LogUri: string
+Name: string
+ReleaseLabel: string
+ScaleDownBehavior: string
+ServiceRole: string
 Tags:
-- Key: Application
-  Value: analytical-dataset-generation
-- Key: CreatedBy
-  Value: emr_launcher
-- Key: Environment
-  Value: development
-- Key: Name
-  Value: analytical-dataset-generation
-- Key: Owner
-  Value: Matt
-- Key: Persistence
-  Value: Ignore
-- Key: SSMEnabled
-  Value: 'True'
+- Key: string
+  Value: string
