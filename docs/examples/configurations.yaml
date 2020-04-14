@@ -46,3 +46,8 @@ Configurations:
     "fs.s3.cse.materialsDescription.enabled": "true"
     "fs.s3.consistent.retryCount": "5"
     "fs.s3.consistent.metadata.tableName": "DataGen-metadata"
+- Classification: "spark-env"
+  Configurations:
+  - Classification: "export"
+    Properties:
+      "PYSPARK_PYTHON": "/usr/bin/python3"
