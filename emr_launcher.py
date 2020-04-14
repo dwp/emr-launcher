@@ -46,7 +46,7 @@ def read_local_config(config_file: str, secrets: dict, required: bool = True) ->
     config = {}
     try:
         with open(config_file, "r") as in_file:
-            config = yaml.safe_load(in_file)
+            config = in_file.read()
     except FileNotFoundError:
         if required:
             raise
@@ -61,12 +61,11 @@ def fetch_secrets(secret_name: str, region_name: str) -> dict:
     response = client.get_secret_value(SecretId=secret_name)
     return ast.literal_eval(response["SecretString"])
 
-def replace_values(config_file: dict, secrets: dict) -> dict:
-    file_contents = str(config_file)
+def replace_values(config: str, secrets: dict) -> dict:
     for secrets_key in secrets:
-        file_contents = file_contents.replace("$" + secrets_key, secrets[secrets_key])
+        config = config.replace("$" + secrets_key, secrets[secrets_key])
 
-    return yaml.safe_load(file_contents)
+    return yaml.safe_load(config)
 
 
 def read_config(config_type: str, required: bool = True) -> dict:
