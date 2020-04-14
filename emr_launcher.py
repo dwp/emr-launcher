@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import logging
 import os
@@ -7,7 +7,7 @@ import boto3
 import yaml
 import ast
 import re
-#from pythonjsonlogger import jsonlogger
+from pythonjsonlogger import jsonlogger
 
 
 def configure_log():
@@ -20,10 +20,10 @@ def configure_log():
     logger = logging.getLogger("emr_launcher")
     logger.propagate = False
     console_handler = logging.StreamHandler()
-    #formatter = jsonlogger.JsonFormatter(
-    #    "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-    #)
-    #console_handler.setFormatter(formatter)
+    formatter = jsonlogger.JsonFormatter(
+        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+    )
+    console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     return logger
 
@@ -127,6 +127,7 @@ def launch_cluster(event: dict = {}, context: object = None) -> dict:
 
     cluster_config = read_config("cluster")
 
+    cluster_config.update(read_config("configurations"))
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
     logger.debug("Requested cluster parameters", extra=cluster_config)
