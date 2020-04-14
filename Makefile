@@ -32,9 +32,11 @@ clean:
 emr-launcher.zip: clean
 	mkdir -p dist
 	cp emr_launcher.py dist
-	pipenv install && \
+	pipenv install
+	echo "debugging-1"
 	VENV=$$(pipenv --venv | grep emr-launcher) && \
 	cp -rf $${VENV}/lib/python3.7/site-packages/* dist/
+	echo "debugging-2"
 	cd dist && zip -qr ../$@ .
 
 .PHONY: zip
