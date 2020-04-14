@@ -44,7 +44,6 @@ def read_s3_config(bucket: str, key: str, secrets: dict, required: bool = True) 
 
 def read_local_config(config_file: str, secrets: dict, required: bool = True) -> dict:
     config = {}
-    replace_values(config_file, secrets, required)
     try:
         with open(config_file, "r") as in_file:
             config = yaml.safe_load(in_file)
@@ -53,7 +52,7 @@ def read_local_config(config_file: str, secrets: dict, required: bool = True) ->
             raise
     except:
         raise
-
+    config = replace_values(config, secrets)
     return config
 
 def fetch_secrets(secret_name: str, region_name: str) -> dict:
@@ -62,22 +61,12 @@ def fetch_secrets(secret_name: str, region_name: str) -> dict:
     response = client.get_secret_value(SecretId=secret_name)
     return ast.literal_eval(response["SecretString"])
 
-def replace_values(config_file: str, secrets: dict, required: bool = True):
-    variables = []
-    file_contents = ""
-    try:
-        with open(config_file, "r") as f:
-            file_contents = f.read()
-    except FileNotFoundError:
-        if required:
-            raise
-        else:
-            return
-    variables = re.findall("\$[A-Z_0-9]+", file_contents)
-    for var in variables:   
-        file_contents = file_contents.replace(var, secrets.get(var[1:]))
-    with open(config_file, "w") as f:
-        f.write(file_contents)
+def replace_values(config_file: dict, secrets: dict) -> dict:
+    file_contents = str(config_file)
+    for secrets_key in secrets:
+        file_contents = file_contents.replace("$" + secrets_key, secrets[secrets_key])
+
+    return yaml.safe_load(file_contents)
 
 
 def read_config(config_type: str, required: bool = True) -> dict:
