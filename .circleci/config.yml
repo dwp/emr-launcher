@@ -26,10 +26,9 @@ jobs:
           VERSION=$(echo $LATEST_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
           VERSION_NUMBER=$(echo $VERSION | sed 's/^v\(.*\)$/\1/')
           mv emr-launcher.zip emr-launcher-$VERSION_NUMBER.zip
-          mkdir -p artifacts
 
     - persist_to_workspace:
-        root: artifacts
+        root: .
         paths:
         - emr-launcher-*.zip
 
