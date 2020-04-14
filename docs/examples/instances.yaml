@@ -1,29 +1,31 @@
 ---
 Instances:
   AdditionalMasterSecurityGroups:
-  - $ADD_SEC_GROUP
+  - "$ADD_MASTER_SG"
   AdditionalSlaveSecurityGroups:
-  - $ADD_SEC_GROUP
-  Ec2SubnetId: $EC2_SUBNET
-  EmrManagedMasterSecurityGroup: $EMR_MASTER_SEC_GROUP
-  EmrManagedSlaveSecurityGroup: $EMR_SLAVE_SEC_GROUP
+  - "$ADD_SLAVE_SG"
+  Ec2SubnetId: "$SUBNET_ID"
+  EmrManagedMasterSecurityGroup: "$MASTER_SG"
+  EmrManagedSlaveSecurityGroup: "$SLAVE_SG"
   InstanceGroups:
-    - EbsConfiguration:
+  - EbsConfiguration:
       EbsBlockDeviceConfigs:
       - VolumeSpecification:
-          SizeInGB: 250
-          VolumeType: gp2
-        VolumesPerInstance: 1
-      InstanceCount: 1
-      InstanceType: m5.2xlarge
-      Name: MASTER
-    - EbsConfiguration:
+          SizeInGB: "250"
+          VolumeType: "gp2"
+        VolumesPerInstance: "1"
+    InstanceCount: "1"
+    InstanceType: "m5.2xlarge"
+    InstanceRole: "MASTER"
+    Name: "MASTER"
+  - EbsConfiguration:
       EbsBlockDeviceConfigs:
       - VolumeSpecification:
-          SizeInGB: 250
-          VolumeType: gp2
-        VolumesPerInstance: 1
-      InstanceCount: 1
-      InstanceType: m5.2xlarge
-      Name: CORE
-  ServiceAccessSecurityGroup: $SVC_ACC_SEC_GROUP
+          SizeInGB: "250"
+          VolumeType: "gp2"
+        VolumesPerInstance: "1"
+    InstanceCount: "1"
+    InstanceType: "m5.2xlarge"
+    InstanceRole: "CORE"
+    Name: "CORE"
+  ServiceAccessSecurityGroup: "$SERVICE_SG"

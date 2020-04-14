@@ -73,7 +73,7 @@ def replace_values(config_file: str, secrets: dict, required: bool = True):
             raise
         else:
             return
-    variables = re.findall("\$[A-Z_]+", file_contents)
+    variables = re.findall("\$[A-Z_0-9]+", file_contents)
     for var in variables:   
         file_contents = file_contents.replace(var, secrets.get(var[1:]))
     with open(config_file, "w") as f:
@@ -131,12 +131,14 @@ def launch_cluster(event: dict = {}, context: object = None) -> dict:
     cluster_config.update(read_config("steps", False))
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
-    # logger.info("Submitting cluster creation request")
-    # emr = boto3.client("emr")
-    # resp = emr.run_job_flow(**cluster_config)
-    # logger.info("Cluster submission successful", extra=resp)
+    logger.info("Submitting cluster creation request")
+    emr = boto3.client("emr")
+    resp = emr.run_job_flow(**cluster_config)
+    logger.info("Cluster submission successful", extra=resp)
 
-    # return resp
+    print(resp)
+
+    return resp
 
 
 if __name__ == "__main__":
