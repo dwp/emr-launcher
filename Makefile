@@ -33,9 +33,8 @@ emr-launcher.zip: clean
 	mkdir -p dist
 	cp emr_launcher.py dist
 	pipenv install && \
-	echo $$(pipenv --venv | grep emr-launcher)
-	ls -la $$(pipenv --venv | grep emr-launcher)
-	cp -rf $$(pipenv --venv | grep emr-launcher)/lib/python3.7/site-packages/* dist/
+	VENV=$$(pipenv --venv) && \
+	cp -rf $${VENV}/lib/python3.7/site-packages/* dist/
 	cd dist && zip -qr ../$@ .
 
 .PHONY: zip
