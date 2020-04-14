@@ -31,6 +31,7 @@ jobs:
         root: .
         paths:
         - emr-launcher-*.zip
+        - Pipfile
 
   snyk-pr:
     docker:
@@ -41,7 +42,7 @@ jobs:
           # Snyk is supposed to do this automatically but it doesn't, so we manually install dependencies to be tested
           name: Install dependencies
           command: |
-            sudo pipenv install
+            pipenv install
       - snyk/scan:
           organization: dwp-dataworks
           severity-threshold: high
@@ -69,7 +70,7 @@ jobs:
     - image: cibuilds/github:0.10
     steps:
     - attach_workspace:
-        at: ./artifacts
+        at: .
     - run:
         name: "Publish Release on GitHub"
         command: |
@@ -79,8 +80,8 @@ jobs:
           set -o pipefail
           [  -z "$LATEST_VERSION" ] && LATEST_VERSION="0.0.0"
           VERSION=$(echo $LATEST_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
-          echo "ghr -t GITHUB_TOKEN -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/"
-          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+          echo "ghr -t GITHUB_TOKEN -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ."
+          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} .
 
 workflows:
   version: 2
