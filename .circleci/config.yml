@@ -58,7 +58,7 @@ jobs:
           # Snyk is supposed to do this automatically but it doesn't, so we manually install dependencies to be tested
           name: Install dependencies
           command: |
-            sudo pipenv install
+            pipenv install
       - snyk/scan:
           organization: dwp-dataworks
           severity-threshold: high
