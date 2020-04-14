@@ -1,25 +1,31 @@
-# https://docs.aws.amazon.com/emr/latest/APIReference/API_RunJobFlow.html
-Name: mycluster
-JobFlowRole: myjobflowrole
-ServiceRole: myservicerole
-ReleaseLabel: emr-5.24.1
+---
 Applications:
-- Name: HBase
-- Name: Hive
-- Name: Spark
+- Name: "Spark"
+- Name: "Hive"
+- Name: "HBase"
+CustomAmiId: "$AMI_ID"
+EbsRootVolumeSize: 100
+LogUri: "s3://$S3_LOG_BUCKET/logs"
+Name: "emr-launcher-test"
+ReleaseLabel: "emr-5.24.1"
+ScaleDownBehavior: "TERMINATE_AT_TASK_COMPLETION"
+ServiceRole: "arn:aws:iam::$ACC_NUMBER:role/$SERVICE_ROLE"
+JobFlowRole: "arn:aws:iam::$ACC_NUMBER:instance-profile/$INSTANCE_PROFILE"
 VisibleToAllUsers: True
 Tags:
-- Key: Application
-  Value: analytical-dataset-generation
-- Key: CreatedBy
-  Value: emr_launcher
-- Key: Environment
-  Value: development
-- Key: Name
-  Value: analytical-dataset-generation
-- Key: Owner
-  Value: Matt
-- Key: Persistence
-  Value: Ignore
-- Key: SSMEnabled
-  Value: 'True'
+- Key: "Persistence"
+  Value: "Ignore"
+- Key: "Owner"
+  Value: "dataworks platform"
+- Key: "AutoShutdown"
+  Value: "False"
+- Key: "CreatedBy"
+  Value: "emr-launcher"
+- Key: "SSMEnabled"
+  Value: "True"
+- Key: "Environment"
+  Value: "development"
+- Key: "Application"
+  Value: "aws-analytical-dataset-generator"
+- Key: "Name"
+  Value: "aws-analytical-dataset-generator"

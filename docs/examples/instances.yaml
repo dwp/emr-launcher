@@ -1,22 +1,33 @@
-# https://docs.aws.amazon.com/emr/latest/APIReference/API_JobFlowInstancesConfig.html
+---
 Instances:
-  Ec2SubnetIds:
-  - subnet-1
-  - subnet-2
-  - subnet-3
-  KeepJobFlowAliveWhenNoSteps: True
-  Ec2KeyName: emr-key
-  # https://docs.aws.amazon.com/emr/latest/APIReference/API_InstanceFleetConfig.html
+  AdditionalMasterSecurityGroups:
+  - "$ADD_MASTER_SG"
+  AdditionalSlaveSecurityGroups:
+  - "$ADD_SLAVE_SG"
+  Ec2SubnetId: "$SUBNET_ID"
+  EmrManagedMasterSecurityGroup: "$MASTER_SG"
+  EmrManagedSlaveSecurityGroup: "$SLAVE_SG"
+  ServiceAccessSecurityGroup: "$SERVICE_SG"
   InstanceFleets:
-  - InstanceFleetType: MASTER
-    Name: master
+  - InstanceFleetType: "MASTER"
+    Name: MASTER
     TargetOnDemandCapacity: 1
     InstanceTypeConfigs:
-    - InstanceType: m5.xlarge
-      WeightedCapacity: 1
-  - InstanceFleetType: CORE
-    Name: core
+    - EbsConfiguration:
+        EbsBlockDeviceConfigs:
+        - VolumeSpecification:
+            SizeInGB: 250
+            VolumeType: "gp2"
+          VolumesPerInstance: 1
+      InstanceType: "m5.2xlarge"
+  - InstanceFleetType: "CORE"
+    Name: CORE
     TargetOnDemandCapacity: 1
     InstanceTypeConfigs:
-    - InstanceType: m5.xlarge
-      WeightedCapacity: 1
+    - EbsConfiguration:
+        EbsBlockDeviceConfigs:
+        - VolumeSpecification:
+            SizeInGB: 250
+            VolumeType: "gp2"
+          VolumesPerInstance: 1
+      InstanceType: "m5.2xlarge"
