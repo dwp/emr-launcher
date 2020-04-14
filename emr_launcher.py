@@ -116,7 +116,7 @@ def launch_cluster(event: dict = {}, context: object = None) -> dict:
 
     cluster_config = read_config("cluster")
 
-    cluster_config.update(read_config("configurations"))
+    cluster_config.update(read_config("configurations", False))
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
     logger.debug("Requested cluster parameters", extra=cluster_config)
