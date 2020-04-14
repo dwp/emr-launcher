@@ -137,7 +137,7 @@ def launch_cluster(event: dict = {}, context: object = None) -> dict:
     resp = emr.run_job_flow(**cluster_config)
     logger.info("Cluster submission successful", extra=resp)
 
-    print(resp)
+    logger.debug(resp)
 
     return resp
 
