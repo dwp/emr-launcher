@@ -35,6 +35,7 @@ emr-launcher.zip: clean
 	pipenv install && \
 	VENV=$$(pipenv --venv) && \
 	cp -rf $${VENV}/lib/python3.7/site-packages/* dist/
+	cp -rf docs dist/docs
 	cd dist && zip -qr ../$@ .
 
 .PHONY: zip
