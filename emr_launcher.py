@@ -16,8 +16,11 @@ def configure_log():
     numeric_level = getattr(logging, log_level, None)
     if not isinstance(numeric_level, int):
         raise ValueError("Invalid log level: %s" % log_level)
-    logging.basicConfig(level=log_level)
-    logger = logging.getLogger("emr_launcher")
+    if len(logging.getLogger().handlers) > 0:
+        logging.getLogger().setLevel(log_level)
+    else:
+        logging.basicConfig(level=log_level)
+    logger = logging.getLogger()
     logger.propagate = False
     console_handler = logging.StreamHandler()
     formatter = jsonlogger.JsonFormatter(
@@ -109,7 +112,7 @@ def read_config(config_type: str, required: bool = True) -> dict:
     return config
 
 
-def launch_cluster(event: dict = {}, context: object = None) -> dict:
+def handler(event: dict = {}, context: object = None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
 
@@ -123,7 +126,7 @@ def launch_cluster(event: dict = {}, context: object = None) -> dict:
     logger.info("Submitting cluster creation request")
     emr = boto3.client("emr")
     resp = emr.run_job_flow(**cluster_config)
-    logger.info("Cluster submission successful", extra=resp)
+    logger.info("Cluster submission successful")
 
     logger.debug(resp)
 
@@ -131,4 +134,4 @@ def launch_cluster(event: dict = {}, context: object = None) -> dict:
 
 
 if __name__ == "__main__":
-    launch_cluster()
+    handler()
