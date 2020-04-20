@@ -25,7 +25,7 @@ jobs:
           [  -z "$LATEST_VERSION" ] && LATEST_VERSION="0.0.0"
           VERSION=$(echo $LATEST_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
           VERSION_NUMBER=$(echo $VERSION | sed 's/^v\(.*\)$/\1/')
-          $(echo $VERSION_NUMBER > version && zip -ur emr-launcher.zip version)
+          echo $VERSION_NUMBER > version && zip -ur emr-launcher.zip version
           mv emr-launcher.zip emr-launcher-$VERSION_NUMBER.zip
 
     - persist_to_workspace:
