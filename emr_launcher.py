@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import logging
 import os
@@ -36,9 +36,9 @@ def read_s3_config(bucket: str, key: str, secrets: dict, required: bool = True) 
     s3_client = boto3.client("s3")
     try:
         response = s3_client.get_object(Bucket=bucket, Key=key)
-        with open(key, "w") as f:
-            f.write(response["Body"])
-        config = read_local_config(config_file=key, secrets=secrets, required=required)
+        with open(key.split("/")[-1], "w") as f:
+            f.write(response["Body"].read().decode('utf8'))
+        config = read_local_config(config_file=key.split("/")[-1], secrets=secrets, required=required)
     except:
         raise
 
