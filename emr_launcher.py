@@ -92,7 +92,7 @@ def read_config(config_type: str, required: bool = True) -> dict:
     config = {}
     local_config_dir = os.getenv("EMR_LAUNCHER_CONFIG_DIR")
 
-    secrets = fetch_secrets(secret_name="EMR-Launcher-Payload", region_name="eu-west-2")
+    secrets = fetch_secrets(secret_name="ADG-Payload", region_name="eu-west-2")
 
     if local_config_dir:
         logger.info("Locating configs", extra={"local_config_dir": {local_config_dir}})
