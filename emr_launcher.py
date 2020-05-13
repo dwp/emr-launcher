@@ -36,13 +36,13 @@ def read_s3_config(bucket: str, key: str, required: bool = True) -> dict:
     s3_client = boto3.client("s3")
     try:
         response = s3_client.get_object(Bucket=bucket, Key=key)
-        with open(key.split("/")[-1], "w") as f:
+        with open("/tmp/" + key.split("/")[-1], "w") as f:
             f.write(response["Body"].read().decode('utf8'))
-        config = read_local_config(config_file=key.split("/")[-1], required=required)
+        config = read_local_config(config_file="/tmp/" + key.split("/")[-1], required=required)
     except:
         raise
 
-    return config
+    return yaml.safe_load(config)
 
 
 def read_local_config(config_file: str, required: bool = True) -> dict:
@@ -93,7 +93,7 @@ def read_config(config_type: str, required: bool = True) -> dict:
         s3_key = f"{s3_folder}/{config_type}.yaml"
         config = read_s3_config(s3_bucket, s3_key, required)
 
-    logger.debug(f"{config_type} config:", extra=config)
+    logger.debug(f"{config_type} config:", config)
     return config
 
 
