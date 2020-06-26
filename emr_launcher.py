@@ -37,8 +37,10 @@ def read_s3_config(bucket: str, key: str, required: bool = True) -> dict:
     try:
         response = s3_client.get_object(Bucket=bucket, Key=key)
         with open("/tmp/" + key.split("/")[-1], "w") as f:
-            f.write(response["Body"].read().decode('utf8'))
-        config = read_local_config(config_file="/tmp/" + key.split("/")[-1], required=required)
+            f.write(response["Body"].read().decode("utf8"))
+        config = read_local_config(
+            config_file="/tmp/" + key.split("/")[-1], required=required
+        )
     except:
         raise
 
