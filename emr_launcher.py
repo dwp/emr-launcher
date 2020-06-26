@@ -37,8 +37,10 @@ def read_s3_config(bucket: str, key: str, required: bool = True) -> dict:
     try:
         response = s3_client.get_object(Bucket=bucket, Key=key)
         with open("/tmp/" + key.split("/")[-1], "w") as f:
-            f.write(response["Body"].read().decode('utf8'))
-        config = read_local_config(config_file="/tmp/" + key.split("/")[-1], required=required)
+            f.write(response["Body"].read().decode("utf8"))
+        config = read_local_config(
+            config_file="/tmp/" + key.split("/")[-1], required=required
+        )
     except:
         raise
 
@@ -101,7 +103,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
 
-    cluster_config = read_config( "cluster" )
+    cluster_config = read_config("cluster")
 
     cluster_config.update(read_config("configurations", False))
     cluster_config.update(read_config("instances"))
