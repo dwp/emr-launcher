@@ -101,7 +101,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
 
-    cluster_config = read_config("cluster")
+    cluster_config = read_config( "cluster" )
 
     cluster_config.update(read_config("configurations", False))
     cluster_config.update(read_config("instances"))
