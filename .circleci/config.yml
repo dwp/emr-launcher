@@ -57,18 +57,6 @@ workflows:
   build-and-publish:
     jobs:
     - build
-    - snyk-pr:
-        requires:
-        - build
-        filters:
-          branches:
-            ignore: master
-    - snyk-master:
-        requires:
-          - build
-        filters:
-          branches:
-            only: master
     - publish-github-release:
         requires:
         - build
