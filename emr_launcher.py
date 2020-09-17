@@ -120,15 +120,62 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     cluster_config.update(read_config("configurations", False))
 
-    if next((sub for sub in cluster_config['Configurations'] if sub['Classification'] == 'spark-hive-site'), None) != None:
-        secret_name = next((sub for sub in cluster_config['Configurations'] if sub['Classification'] == 'spark-hive-site'), None)['Properties']["javax.jdo.option.ConnectionPassword"]
+    if (
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )
+        != None
+    ):
+        secret_name = next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"]
         secret_value = retrieve_secrets(secret_name)
-        next((sub for sub in cluster_config['Configurations'] if sub['Classification'] == 'spark-hive-site'), None)['Properties']["javax.jdo.option.ConnectionPassword"]=secret_value
-    elif next((sub for sub in cluster_config['Configurations'] if sub['Classification'] == 'hive-site'), None) != None:
-        secret_name = next((sub for sub in cluster_config['Configurations'] if sub['Classification'] == 'hive-site'), None)['Properties']["javax.jdo.option.ConnectionPassword"]
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
+    elif (
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )
+        != None
+    ):
+        secret_name = next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"]
         secret_value = retrieve_secrets(secret_name)
-        next((sub for sub in cluster_config['Configurations'] if sub['Classification'] == 'hive-site'), None)['Properties']["javax.jdo.option.ConnectionPassword"]=secret_value
-
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
 
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
