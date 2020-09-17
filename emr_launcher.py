@@ -71,7 +71,7 @@ def read_local_config(config_file: str, required: bool = True) -> dict:
             raise
     except:
         raise
-    return yaml.safe_load(config)
+    return config
 
 
 def read_config(config_type: str, required: bool = True) -> dict:
