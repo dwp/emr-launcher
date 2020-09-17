@@ -34,38 +34,6 @@ jobs:
         - emr-launcher-*.zip
         - Pipfile
 
-  snyk-pr:
-    docker:
-      - image: circleci/python:3.7.1
-    steps:
-      - checkout
-      - run:
-          # Snyk is supposed to do this automatically but it doesn't, so we manually install dependencies to be tested
-          name: Install dependencies
-          command: |
-            pipenv install
-      - snyk/scan:
-          organization: dwp-dataworks
-          severity-threshold: high
-          target-file: Pipfile
-          project: '${CIRCLE_PROJECT_REPONAME}/pr-emr-launcher'
-
-  snyk-master:
-    docker:
-      - image: circleci/python:3.7.1
-    steps:
-      - checkout
-      - run:
-          # Snyk is supposed to do this automatically but it doesn't, so we manually install dependencies to be tested
-          name: Install dependencies
-          command: |
-            pipenv install
-      - snyk/scan:
-          organization: dwp-dataworks
-          severity-threshold: high
-          target-file: Pipfile
-          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-emr-laucher'
-
   publish-github-release:
     docker:
     - image: cibuilds/github:0.10
