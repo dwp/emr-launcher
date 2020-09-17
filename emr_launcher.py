@@ -109,16 +109,16 @@ def handler(event: dict = {}, context: object = None) -> dict:
     correlation_id = payload["correlation_id"]
 
     cluster_config = read_config("cluster")
-    # Obtain Spark arguments for EMR from the config and add correlation id to it
-    sparks_args = cluster_config['Steps'][2]['HadoopJarStep']['Args']
-    sparks_args.append("--correlation_id")
-    sparks_args.append(correlation_id)
-    cluster_config['Steps'][2]['HadoopJarStep']['Args'] = sparks_args
-    logger.debug("Requested cluster parameters", extra=cluster_config)
-
     cluster_config.update(read_config("configurations", False))
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
+
+    # Obtain Spark arguments for EMR from the config and add correlation id to it
+    sparks_args = cluster_config["Steps"][2]["HadoopJarStep"]["Args"]
+    sparks_args.append("--correlation_id")
+    sparks_args.append(correlation_id)
+    cluster_config["Steps"][2]["HadoopJarStep"]["Args"] = sparks_args
+
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
     logger.info("Submitting cluster creation request")
