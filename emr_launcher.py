@@ -11,6 +11,20 @@ from pythonjsonlogger import jsonlogger
 import json
 
 
+def retrieve_secrets(secret_name):
+    try:
+        secret_value = ""
+        session = boto3.session.Session()
+        client = session.client(service_name="secretsmanager")
+        response = client.get_secret_value(SecretId=secret_name)
+        response_string = response["SecretString"]
+        response_dict = ast.literal_eval(response_string)
+        secret_value = response_dict["password"]
+    except Exception as e:
+        logging.info(secret_name + " Secret not found in secretsmanager")
+    return secret_value
+
+
 def configure_log():
     """Configure JSON logger."""
     log_level = os.environ.get("EMR_LAUNCHER_LOG_LEVEL", "INFO").upper()
@@ -44,7 +58,6 @@ def read_s3_config(bucket: str, key: str, required: bool = True) -> dict:
         )
     except:
         raise
-
     return yaml.safe_load(config)
 
 
@@ -58,7 +71,7 @@ def read_local_config(config_file: str, required: bool = True) -> dict:
             raise
     except:
         raise
-    return config
+    return yaml.safe_load(config)
 
 
 def read_config(config_type: str, required: bool = True) -> dict:
@@ -110,6 +123,64 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     cluster_config = read_config("cluster")
     cluster_config.update(read_config("configurations", False))
+
+    if (
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )
+        != None
+    ):
+        secret_name = next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"]
+        secret_value = retrieve_secrets(secret_name)
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
+    elif (
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )
+        != None
+    ):
+        secret_name = next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"]
+        secret_value = retrieve_secrets(secret_name)
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
+
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
