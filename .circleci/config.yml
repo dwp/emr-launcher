@@ -32,7 +32,6 @@ jobs:
         root: .
         paths:
         - emr-launcher-*.zip
-        - Pipfile
 
   publish-github-release:
     docker:
