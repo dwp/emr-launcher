@@ -180,7 +180,6 @@ def handler(event: dict = {}, context: object = None) -> dict:
     except:
         logger.info("javax.jdo.option.ConnectionPassword is not set")
 
-
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
