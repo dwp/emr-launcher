@@ -117,10 +117,6 @@ def handler(event: dict = {}, context: object = None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
 
-    sns_message = event["Records"][0]["Sns"]
-    payload = json.loads(sns_message["Message"])
-    correlation_id = payload["correlation_id"]
-
     cluster_config = read_config("cluster")
     cluster_config.update(read_config("configurations", False))
 
@@ -184,12 +180,6 @@ def handler(event: dict = {}, context: object = None) -> dict:
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
-    # Obtain Spark arguments for EMR from the config and add correlation id to it
-    sparks_args = cluster_config["Steps"][2]["HadoopJarStep"]["Args"]
-    sparks_args.append("--correlation_id")
-    sparks_args.append(correlation_id)
-    cluster_config["Steps"][2]["HadoopJarStep"]["Args"] = sparks_args
-
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
     logger.info("Submitting cluster creation request")
@@ -203,9 +193,4 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
 
 if __name__ == "__main__":
-    logger = configure_log()
-    try:
-        json_content = json.loads(open("event.json", "r").read())
-        handler(json_content, None)
-    except Exception as e:
-        logger.error(e)
+    handler(json_content, None)
