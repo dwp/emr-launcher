@@ -193,4 +193,4 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
 
 if __name__ == "__main__":
-    handler(json_content, None)
+    handler()
