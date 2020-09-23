@@ -177,8 +177,9 @@ def handler(event: dict = {}, context: object = None) -> dict:
                 ),
                 None,
             )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-    except:
-        logger.info("javax.jdo.option.ConnectionPassword is not set")
+    except Exception as e:
+        logger.info(e)
+
 
 
     cluster_config.update(read_config("instances"))
