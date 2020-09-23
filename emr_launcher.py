@@ -181,7 +181,6 @@ def handler(event: dict = {}, context: object = None) -> dict:
         logger.info(e)
 
 
-
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
