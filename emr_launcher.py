@@ -149,7 +149,11 @@ def handler(event: dict = {}, context: object = None) -> dict:
                 ),
                 None,
             )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-        elif (
+    except Exception as e:
+        logger.info(e)
+
+    try:
+        if (
             next(
                 (
                     sub
