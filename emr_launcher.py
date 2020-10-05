@@ -9,6 +9,15 @@ import boto3
 import yaml
 from pythonjsonlogger import jsonlogger
 
+STEPS = "Steps"
+NAME_KEY = "Name"
+SOURCE = "source"
+SUBMIT_JOB = "submit-job"
+HADOOP_JAR_STEP = "HadoopJarStep"
+ARGS = "Args"
+CORRELATION_ID = "--correlation_id"
+S3_PREFIX = "--s3_prefix"
+
 
 def retrieve_secrets(secret_name):
     try:
@@ -215,8 +224,8 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
                 next(
                     (
                             sub
-                            for sub in cluster_config["Steps"]
-                            if sub["Name"] == "source"
+                            for sub in cluster_config[STEPS]
+                            if sub[NAME_KEY] == SOURCE
                     ),
                     None,
                 )
@@ -225,23 +234,23 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
             pdm_script_args = next(
                 (
                     sub
-                    for sub in cluster_config["Steps"]
-                    if sub["Name"] == "source"
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == SOURCE
                 ),
                 None,
-            )["HadoopJarStep"]["Args"]
-            pdm_script_args.append("--correlation_id")
+            )[HADOOP_JAR_STEP][ARGS]
+            pdm_script_args.append(CORRELATION_ID)
             pdm_script_args.append(correlation_id)
-            pdm_script_args.append("--s3_prefix")
+            pdm_script_args.append(S3_PREFIX)
             pdm_script_args.append(s3_prefix)
             next(
                 (
                     sub
-                    for sub in cluster_config["Steps"]
-                    if sub["Name"] == "source"
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == SOURCE
                 ),
                 None,
-            )["HadoopJarStep"]["Args"] = pdm_script_args
+            )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
     except Exception as e:
         logger.error(e)
 
@@ -250,8 +259,8 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
                 next(
                     (
                             sub
-                            for sub in cluster_config["Steps"]
-                            if sub["Name"] == "submit-job"
+                            for sub in cluster_config[STEPS]
+                            if sub[NAME_KEY] == SUBMIT_JOB
                     ),
                     None,
                 )
@@ -260,23 +269,23 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
             adg_script_args = next(
                 (
                     sub
-                    for sub in cluster_config["Steps"]
-                    if sub["Name"] == "submit-job"
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == SUBMIT_JOB
                 ),
                 None,
-            )["HadoopJarStep"]["Args"]
-            adg_script_args.append("--correlation_id")
+            )[HADOOP_JAR_STEP][ARGS]
+            adg_script_args.append(CORRELATION_ID)
             adg_script_args.append(correlation_id)
-            adg_script_args.append("--s3_prefix")
+            adg_script_args.append(S3_PREFIX)
             adg_script_args.append(s3_prefix)
             next(
                 (
                     sub
-                    for sub in cluster_config["Steps"]
-                    if sub["Name"] == "submit-job"
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == SUBMIT_JOB
                 ),
                 None,
-            )["HadoopJarStep"]["Args"] = adg_script_args
+            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
     except Exception as e:
         logger.error(e)
 
