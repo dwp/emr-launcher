@@ -192,13 +192,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
-    # Obtain Spark arguments for EMR from the config and add correlation id to it
-    sparks_args = cluster_config["Steps"][2]["HadoopJarStep"]["Args"]
-    sparks_args.append("--correlation_id")
-    sparks_args.append(correlation_id)
-    sparks_args.append("--s3_prefix")
-    sparks_args.append(s3_prefix)
-    cluster_config["Steps"][2]["HadoopJarStep"]["Args"] = sparks_args
+    add_command_line_params(cluster_config, correlation_id, s3_prefix)
 
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
@@ -210,6 +204,32 @@ def handler(event: dict = {}, context: object = None) -> dict:
     logger.debug(resp)
 
     return resp
+
+
+def add_command_line_params(cluster_config, correlation_id, s3_prefix):
+    '''
+    Adding command line arguments to ADG and PDM EMR steps scripts. First if block in Try is for PDM and the second one
+    is for ADG.
+    '''
+    try:
+        if cluster_config["Steps"][4]:
+            pdm_script_args = cluster_config["Steps"][4]["HadoopJarStep"]["Args"]
+            pdm_script_args.append("--correlation_id")
+            pdm_script_args.append(correlation_id)
+            pdm_script_args.append("--s3_prefix")
+            pdm_script_args.append(s3_prefix)
+            cluster_config["Steps"][4]["HadoopJarStep"]["Args"] = pdm_script_args
+            return
+    except Exception as e:
+        logger.debug("Ignore this error for ADG lambda as it does not have these many steps and continue below", str(e))
+    if cluster_config["Steps"][2]:
+        sparks_args = cluster_config["Steps"][2]["HadoopJarStep"]["Args"]
+        sparks_args.append("--correlation_id")
+        sparks_args.append(correlation_id)
+        sparks_args.append("--s3_prefix")
+        sparks_args.append(s3_prefix)
+        cluster_config["Steps"][2]["HadoopJarStep"]["Args"] = sparks_args
+
 
 
 if __name__ == "__main__":
