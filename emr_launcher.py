@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 
+import ast
+import json
 import logging
 import os
 
 import boto3
 import yaml
-import ast
-import re
 from pythonjsonlogger import jsonlogger
-import json
+
+STEPS = "Steps"
+NAME_KEY = "Name"
+SOURCE = "source"
+SUBMIT_JOB = "submit-job"
+HADOOP_JAR_STEP = "HadoopJarStep"
+ARGS = "Args"
+CORRELATION_ID = "--correlation_id"
+S3_PREFIX = "--s3_prefix"
 
 
 def retrieve_secrets(secret_name):
@@ -135,7 +143,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
                 ),
                 None,
             )
-            != None
+            is not None
         ):
             secret_name = next(
                 (
@@ -167,7 +175,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
                 ),
                 None,
             )
-            != None
+            is not None
         ):
             secret_name = next(
                 (
@@ -192,13 +200,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
-    # Obtain Spark arguments for EMR from the config and add correlation id to it
-    sparks_args = cluster_config["Steps"][2]["HadoopJarStep"]["Args"]
-    sparks_args.append("--correlation_id")
-    sparks_args.append(correlation_id)
-    sparks_args.append("--s3_prefix")
-    sparks_args.append(s3_prefix)
-    cluster_config["Steps"][2]["HadoopJarStep"]["Args"] = sparks_args
+    add_command_line_params(cluster_config, correlation_id, s3_prefix)
 
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
@@ -210,6 +212,58 @@ def handler(event: dict = {}, context: object = None) -> dict:
     logger.debug(resp)
 
     return resp
+
+
+def add_command_line_params(cluster_config, correlation_id, s3_prefix):
+    """
+    Adding command line arguments to ADG and PDM EMR steps scripts. First if block in Try is for PDM and the second one
+    is for ADG.
+    """
+    try:
+        if (
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )
+            is not None
+        ):
+            pdm_script_args = next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            pdm_script_args.append(CORRELATION_ID)
+            pdm_script_args.append(correlation_id)
+            pdm_script_args.append(S3_PREFIX)
+            pdm_script_args.append(s3_prefix)
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
+    except Exception as e:
+        logger.error(e)
+
+    try:
+        if (
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )
+            is not None
+        ):
+            adg_script_args = next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            adg_script_args.append(CORRELATION_ID)
+            adg_script_args.append(correlation_id)
+            adg_script_args.append(S3_PREFIX)
+            adg_script_args.append(s3_prefix)
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
+    except Exception as e:
+        logger.error(e)
 
 
 if __name__ == "__main__":
