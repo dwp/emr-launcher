@@ -135,15 +135,15 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     try:
         if (
-                next(
-                    (
-                            sub
-                            for sub in cluster_config["Configurations"]
-                            if sub["Classification"] == "spark-hive-site"
-                    ),
-                    None,
-                )
-                is not None
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )
+            is not None
         ):
             secret_name = next(
                 (
@@ -167,15 +167,15 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     try:
         if (
-                next(
-                    (
-                            sub
-                            for sub in cluster_config["Configurations"]
-                            if sub["Classification"] == "hive-site"
-                    ),
-                    None,
-                )
-                is not None
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )
+            is not None
         ):
             secret_name = next(
                 (
@@ -221,22 +221,14 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
     """
     try:
         if (
-                next(
-                    (
-                            sub
-                            for sub in cluster_config[STEPS]
-                            if sub[NAME_KEY] == SOURCE
-                    ),
-                    None,
-                )
-                is not None
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )
+            is not None
         ):
             pdm_script_args = next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == SOURCE
-                ),
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
                 None,
             )[HADOOP_JAR_STEP][ARGS]
             pdm_script_args.append(CORRELATION_ID)
@@ -244,11 +236,7 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
             pdm_script_args.append(S3_PREFIX)
             pdm_script_args.append(s3_prefix)
             next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == SOURCE
-                ),
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
                 None,
             )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
     except Exception as e:
@@ -256,22 +244,14 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
 
     try:
         if (
-                next(
-                    (
-                            sub
-                            for sub in cluster_config[STEPS]
-                            if sub[NAME_KEY] == SUBMIT_JOB
-                    ),
-                    None,
-                )
-                is not None
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )
+            is not None
         ):
             adg_script_args = next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == SUBMIT_JOB
-                ),
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
                 None,
             )[HADOOP_JAR_STEP][ARGS]
             adg_script_args.append(CORRELATION_ID)
@@ -279,11 +259,7 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
             adg_script_args.append(S3_PREFIX)
             adg_script_args.append(s3_prefix)
             next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == SUBMIT_JOB
-                ),
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
                 None,
             )[HADOOP_JAR_STEP][ARGS] = adg_script_args
     except Exception as e:
