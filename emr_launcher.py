@@ -127,15 +127,15 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     try:
         if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "spark-hive-site"
-                ),
-                None,
-            )
-            != None
+                next(
+                    (
+                            sub
+                            for sub in cluster_config["Configurations"]
+                            if sub["Classification"] == "spark-hive-site"
+                    ),
+                    None,
+                )
+                is not None
         ):
             secret_name = next(
                 (
@@ -159,15 +159,15 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     try:
         if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "hive-site"
-                ),
-                None,
-            )
-            != None
+                next(
+                    (
+                            sub
+                            for sub in cluster_config["Configurations"]
+                            if sub["Classification"] == "hive-site"
+                    ),
+                    None,
+                )
+                is not None
         ):
             secret_name = next(
                 (
@@ -212,24 +212,74 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
     is for ADG.
     '''
     try:
-        if cluster_config["Steps"][4]:
-            pdm_script_args = cluster_config["Steps"][4]["HadoopJarStep"]["Args"]
+        if (
+                next(
+                    (
+                            sub
+                            for sub in cluster_config["Steps"]
+                            if sub["Name"] == "source"
+                    ),
+                    None,
+                )
+                is not None
+        ):
+            pdm_script_args = next(
+                (
+                    sub
+                    for sub in cluster_config["Steps"]
+                    if sub["Name"] == "source"
+                ),
+                None,
+            )["HadoopJarStep"]["Args"]
             pdm_script_args.append("--correlation_id")
             pdm_script_args.append(correlation_id)
             pdm_script_args.append("--s3_prefix")
             pdm_script_args.append(s3_prefix)
-            cluster_config["Steps"][4]["HadoopJarStep"]["Args"] = pdm_script_args
-            return
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Steps"]
+                    if sub["Name"] == "source"
+                ),
+                None,
+            )["HadoopJarStep"]["Args"] = pdm_script_args
     except Exception as e:
-        logger.debug("Ignore this error for ADG lambda as it does not have these many steps and continue below", str(e))
-    if cluster_config["Steps"][2]:
-        sparks_args = cluster_config["Steps"][2]["HadoopJarStep"]["Args"]
-        sparks_args.append("--correlation_id")
-        sparks_args.append(correlation_id)
-        sparks_args.append("--s3_prefix")
-        sparks_args.append(s3_prefix)
-        cluster_config["Steps"][2]["HadoopJarStep"]["Args"] = sparks_args
+        logger.error(e)
 
+    try:
+        if (
+                next(
+                    (
+                            sub
+                            for sub in cluster_config["Steps"]
+                            if sub["Name"] == "submit-job"
+                    ),
+                    None,
+                )
+                is not None
+        ):
+            adg_script_args = next(
+                (
+                    sub
+                    for sub in cluster_config["Steps"]
+                    if sub["Name"] == "submit-job"
+                ),
+                None,
+            )["HadoopJarStep"]["Args"]
+            adg_script_args.append("--correlation_id")
+            adg_script_args.append(correlation_id)
+            adg_script_args.append("--s3_prefix")
+            adg_script_args.append(s3_prefix)
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Steps"]
+                    if sub["Name"] == "submit-job"
+                ),
+                None,
+            )["HadoopJarStep"]["Args"] = adg_script_args
+    except Exception as e:
+        logger.error(e)
 
 
 if __name__ == "__main__":
