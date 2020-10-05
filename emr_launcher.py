@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
+import ast
+import json
 import logging
 import os
 
 import boto3
 import yaml
-import ast
-import re
 from pythonjsonlogger import jsonlogger
-import json
 
 
 def retrieve_secrets(secret_name):
@@ -207,10 +206,10 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
 
 def add_command_line_params(cluster_config, correlation_id, s3_prefix):
-    '''
+    """
     Adding command line arguments to ADG and PDM EMR steps scripts. First if block in Try is for PDM and the second one
     is for ADG.
-    '''
+    """
     try:
         if (
                 next(
