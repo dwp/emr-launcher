@@ -9,8 +9,8 @@ import boto3
 import yaml
 from pythonjsonlogger import jsonlogger
 
-S3_PREFIX = "s3_prefix"
-CORRELATION_ID = "correlation_id"
+PAYLOAD_S3_PREFIX = "s3_prefix"
+PAYLOAD_CORRELATION_ID = "correlation_id"
 
 STEPS = "Steps"
 NAME_KEY = "Name"
@@ -130,14 +130,14 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     # If when this lambda is triggered via API
     # Else when this lambda is triggered via SNS
-    if CORRELATION_ID in event and S3_PREFIX in event:
-        correlation_id = event[CORRELATION_ID]
-        s3_prefix = event[S3_PREFIX]
+    if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
+        correlation_id = event[PAYLOAD_CORRELATION_ID]
+        s3_prefix = event[PAYLOAD_S3_PREFIX]
     else:
         sns_message = event["Records"][0]["Sns"]
         payload = json.loads(sns_message["Message"])
-        correlation_id = payload[CORRELATION_ID]
-        s3_prefix = payload[S3_PREFIX]
+        correlation_id = payload[PAYLOAD_CORRELATION_ID]
+        s3_prefix = payload[PAYLOAD_S3_PREFIX]
 
     cluster_config = read_config("cluster")
     cluster_config.update(read_config("configurations", False))
