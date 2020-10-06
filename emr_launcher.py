@@ -9,6 +9,9 @@ import boto3
 import yaml
 from pythonjsonlogger import jsonlogger
 
+S3_PREFIX = "s3_prefix"
+CORRELATION_ID = "correlation_id"
+
 STEPS = "Steps"
 NAME_KEY = "Name"
 SOURCE = "source"
@@ -125,10 +128,16 @@ def handler(event: dict = {}, context: object = None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
 
-    sns_message = event["Records"][0]["Sns"]
-    payload = json.loads(sns_message["Message"])
-    correlation_id = payload["correlation_id"]
-    s3_prefix = payload["s3_prefix"]
+    # If when this lambda is triggered via API
+    # Else when this lambda is triggered via SNS
+    if CORRELATION_ID in event and S3_PREFIX in event:
+        correlation_id = event[CORRELATION_ID]
+        s3_prefix = event[S3_PREFIX]
+    else:
+        sns_message = event["Records"][0]["Sns"]
+        payload = json.loads(sns_message["Message"])
+        correlation_id = payload[CORRELATION_ID]
+        s3_prefix = payload[S3_PREFIX]
 
     cluster_config = read_config("cluster")
     cluster_config.update(read_config("configurations", False))
@@ -269,7 +278,6 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
 if __name__ == "__main__":
     logger = configure_log()
     try:
-        json_content = json.loads(open("event.json", "r").read())
-        handler(json_content, None)
+        handler()
     except Exception as e:
         logger.error(e)
