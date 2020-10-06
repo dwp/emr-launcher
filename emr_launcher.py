@@ -130,7 +130,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
 
     # If when this lambda is triggered via API
     # Else when this lambda is triggered via SNS
-    if PAYLOAD_S3_PREFIX in event and PAYLOAD_S3_PREFIX in event:
+    if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
         correlation_id = event[PAYLOAD_CORRELATION_ID]
         s3_prefix = event[PAYLOAD_S3_PREFIX]
     else:
