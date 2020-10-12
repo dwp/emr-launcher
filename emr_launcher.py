@@ -127,17 +127,19 @@ def read_config(config_type: str, required: bool = True) -> dict:
 def handler(event: dict = {}, context: object = None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
-
+    correlation_id_necessary = False
     # If when this lambda is triggered via API
-    # Else when this lambda is triggered via SNS
+    # Elif when this lambda is triggered via SNS
     if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
         correlation_id = event[PAYLOAD_CORRELATION_ID]
         s3_prefix = event[PAYLOAD_S3_PREFIX]
-    else:
+        correlation_id_necessary = True
+    elif "Records" in event:
         sns_message = event["Records"][0]["Sns"]
         payload = json.loads(sns_message["Message"])
         correlation_id = payload[PAYLOAD_CORRELATION_ID]
         s3_prefix = payload[PAYLOAD_S3_PREFIX]
+        correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
     cluster_config.update(read_config("configurations", False))
@@ -209,7 +211,8 @@ def handler(event: dict = {}, context: object = None) -> dict:
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
-    add_command_line_params(cluster_config, correlation_id, s3_prefix)
+    if correlation_id_necessary:
+        add_command_line_params(cluster_config, correlation_id, s3_prefix)
 
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
