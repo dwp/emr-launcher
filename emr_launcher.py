@@ -133,7 +133,7 @@ def handler(event: dict = {}, context: object = None) -> dict:
     if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
         correlation_id = event[PAYLOAD_CORRELATION_ID]
         s3_prefix = event[PAYLOAD_S3_PREFIX]
-    else:
+    elif sns_message not None:
         sns_message = event["Records"][0]["Sns"]
         payload = json.loads(sns_message["Message"])
         correlation_id = payload[PAYLOAD_CORRELATION_ID]
@@ -231,22 +231,19 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
     try:
         if (
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )
             is not None
         ):
             pdm_script_args = next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )[HADOOP_JAR_STEP][ARGS]
             pdm_script_args.append(CORRELATION_ID)
             pdm_script_args.append(correlation_id)
             pdm_script_args.append(S3_PREFIX)
             pdm_script_args.append(s3_prefix)
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
     except Exception as e:
         logger.error(e)
