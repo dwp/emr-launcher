@@ -20,7 +20,10 @@ HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
 CORRELATION_ID = "--correlation_id"
 S3_PREFIX = "--s3_prefix"
-CONFIG_OBJECT = {"hive-site": {"javax.jdo.option.ConnectionPassword": "###"}, "spark-hive-site":{"javax.jdo.option.ConnectionPassword": "###"}}
+CONFIG_OBJECT = {
+    "hive-site": {"javax.jdo.option.ConnectionPassword": "###"},
+    "spark-hive-site": {"javax.jdo.option.ConnectionPassword": "###"},
+}
 
 
 def retrieve_secrets(secret_name):
@@ -222,7 +225,7 @@ def fill_overridden_values(dictionary, override_nested_object):
     """
     Overrides values in config file objects with overrides passed in
     """
-    dict_out={}
+    dict_out = {}
     for key in dictionary:
         value = dictionary[key]
         if isinstance(value, dict):
@@ -242,10 +245,10 @@ def create_override_object(event, configurations_secret_object):
     """
     Creates an override object based on secrets and optional object passed into event.override_object
     """
-    override_object={}
+    override_object = {}
     override_object.update(configurations_secret_object)
-    if 'override_object' in event:
-        override_object.update(event.get('override_object'))
+    if "override_object" in event:
+        override_object.update(event.get("override_object"))
     return override_object
 
 
@@ -263,7 +266,7 @@ def fill_template_with_configs(config_object, override_object):
             ...
         }
     """
-    return_array=[]
+    return_array = []
     list_from_template = config_object.get("Configurations")
     for item in list_from_template:
         if item.get("Classification") in override_object.keys():
@@ -271,7 +274,7 @@ def fill_template_with_configs(config_object, override_object):
             return_array.append(fill_overridden_values(item, override_nested_object))
         else:
             return_array.append(item)
-    return {'Configurations': return_array}
+    return {"Configurations": return_array}
 
 
 if __name__ == "__main__":
