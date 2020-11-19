@@ -20,6 +20,7 @@ HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
 CORRELATION_ID = "--correlation_id"
 S3_PREFIX = "--s3_prefix"
+CONFIG_OBJECT = {"hive-site": {"javax.jdo.option.ConnectionPassword": "###"}, "spark-hive-site":{"javax.jdo.option.ConnectionPassword": "###"}}
 
 
 def retrieve_secrets(secret_name):
@@ -141,73 +142,12 @@ def handler(event: dict = {}, context: object = None) -> dict:
         s3_prefix = payload[PAYLOAD_S3_PREFIX]
         correlation_id_necessary = True
 
+    override_object = create_override_object(event, CONFIG_OBJECT)
+    configuration_template = read_config("configurations", False)
+    configurations = fill_template_with_configs(configuration_template, override_object)
+
     cluster_config = read_config("cluster")
-    cluster_config.update(read_config("configurations", False))
-
-    try:
-        if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "spark-hive-site"
-                ),
-                None,
-            )
-            is not None
-        ):
-            secret_name = next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "spark-hive-site"
-                ),
-                None,
-            )["Properties"]["javax.jdo.option.ConnectionPassword"]
-            secret_value = retrieve_secrets(secret_name)
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "spark-hive-site"
-                ),
-                None,
-            )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-    except Exception as e:
-        logger.info(e)
-
-    try:
-        if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "hive-site"
-                ),
-                None,
-            )
-            is not None
-        ):
-            secret_name = next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "hive-site"
-                ),
-                None,
-            )["Properties"]["javax.jdo.option.ConnectionPassword"]
-            secret_value = retrieve_secrets(secret_name)
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "hive-site"
-                ),
-                None,
-            )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-    except Exception as e:
-        logger.info(e)
-
+    cluster_config.update(configurations)
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
 
@@ -276,6 +216,62 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
             )[HADOOP_JAR_STEP][ARGS] = adg_script_args
     except Exception as e:
         logger.error(e)
+
+
+def fill_overridden_values(dictionary, override_nested_object):
+    """
+    Overrides values in config file objects with overrides passed in
+    """
+    dict_out={}
+    for key in dictionary:
+        value = dictionary[key]
+        if isinstance(value, dict):
+            dict_out[key] = fill_overridden_values(value, override_nested_object)
+        elif key in override_nested_object.keys():
+            secret = retrieve_secrets(value)
+            if secret is not "":
+                dict_out[key] = secret
+            else:
+                dict_out[key] = override_nested_object[key]
+        else:
+            dict_out[key] = dictionary[key]
+    return dict_out
+
+
+def create_override_object(event, configurations_secret_object):
+    """
+    Creates an override object based on secrets and optional object passed into event.override_object
+    """
+    override_object={}
+    override_object.update(configurations_secret_object)
+    if 'override_object' in event:
+        override_object.update(event.get('override_object'))
+    return override_object
+
+
+def fill_template_with_configs(config_object, override_object):
+    """
+    Takes config object from config file and returns new object with overridden values
+
+    Inputs:
+    config_object - config object parsed to dict from config file
+    override_object - dict of config Classification mapped to nested dict of keys/values to be overridden
+    eg: {
+            "hive-site": {
+                "javax.jdo.option.ConnectionUserName": "my_user_name"
+            },
+            ...
+        }
+    """
+    return_array=[]
+    list_from_template = config_object.get("Configurations")
+    for item in list_from_template:
+        if item.get("Classification") in override_object.keys():
+            override_nested_object = override_object[item["Classification"]]
+            return_array.append(fill_overridden_values(item, override_nested_object))
+        else:
+            return_array.append(item)
+    return {'Configurations': return_array}
 
 
 if __name__ == "__main__":
