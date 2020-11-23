@@ -58,7 +58,7 @@ class TestConfig:
             with pytest.raises(ConfigNotFoundError):
                 ClusterConfig.from_s3(bucket=bucket, key=key, s3_client=s3)
 
-    def test_find_replace_single_partition(self):
+    def test_find_replace_single_path(self):
         config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_CONFIGURATIONS)
         config.find_replace("Configurations", "Classification", "yarn-site",
                             lambda x: {**x, "Properties": {"test-property": "test-value"}})
@@ -66,7 +66,7 @@ class TestConfig:
         updated_item = next((item for item in config["Configurations"] if item["Classification"] == "yarn-site"))
         assert updated_item["Properties"]["test-property"] == "test-value"
 
-    def test_find_replace_nested_partition(self):
+    def test_find_replace_nested_path(self):
         config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
         config.find_replace("Instances.InstanceFleets", "Name", "MASTER", lambda x: {**x, "Name": "TEST"})
 
@@ -76,12 +76,17 @@ class TestConfig:
         updated_item = next((item for item in config["Instances"]["InstanceFleets"] if item["Name"] == "TEST"), None)
         assert updated_item is not None
 
-    def test_find_replace_nonexistent_partition(self):
+    def test_find_replace_nonexistent_path(self):
         expected = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
         actual = ClusterConfig(expected)
-        actual.find_replace("Nonexistent.Partition", "Name", "MASTER", lambda x: {**x, "Name": "TEST"})
+        actual.find_replace("Nonexistent.Path", "Name", "MASTER", lambda x: {**x, "Name": "TEST"})
 
         assert expected is not actual
         assert actual == expected
 
+    def test_find_replace_throws_not_list(self):
+        config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
+
+        with pytest.raises(TypeError):
+            config.find_replace("Instances.Ec2SubnetId", "Name", "MASTER", lambda x: {**x, "Name": "TEST"})
 

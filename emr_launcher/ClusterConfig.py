@@ -14,27 +14,43 @@ class ClusterConfig(MutableMapping, ABC):
     def __init__(self, config: MutableMapping):
         self._config = dict(config)
 
-    def find_replace(self, partition: str, condition_key: str, condition_value: str, replace_func: callable):
+    def find_replace(self, path: str, condition_key: str, condition_value: str, replace_func: callable):
         try:
-            nest_keys = partition.split(".")
-            current_partition = self._config[nest_keys.pop(0)]
+            nest_keys = path.split(".")
+            current_node = self._config[nest_keys.pop(0)]
             for key in nest_keys:
-                current_partition = current_partition[key]
+                current_node = current_node[key]
         except (KeyError, TypeError):
             return
 
-        if not isinstance(current_partition, list):
-            raise TypeError(f"Partition {partition} does not correspond to a list")
+        if not isinstance(current_node, list):
+            raise TypeError(f"Path {path} does not correspond to a list")
 
-        found_item = next((item for item in current_partition if item[condition_key] == condition_value), None)
+        found_item = next((item for item in current_node if item[condition_key] == condition_value), None)
 
-        if found_item:
+        if found_item is not None:
             replaced_item = replace_func(found_item)
             updated_partition = [
-                *filter(lambda item: item[condition_key] != condition_value, current_partition),
+                *filter(lambda item: item[condition_key] != condition_value, current_node),
                 replaced_item]
-            current_partition.clear()
-            current_partition.extend(updated_partition)
+            current_node.clear()
+            current_node.extend(updated_partition)
+
+    def override(self, other: MutableMapping):
+        """
+        Deep merges this config with another MutableMapping. Values in `other` override the current ones.
+        Nested lists are not merged but replaced altogether.
+        """
+        for key in other:
+            if key in self._config:
+                if isinstance(self._config[key], MutableMapping) and isinstance(other[key], MutableMapping):
+                    self.override(other[key])
+                elif self._config[key] == other[key]:
+                    pass  # same leaf value
+                else:
+                    self._config[key] = other[key]
+            else:
+                self._config[key] = other[key]
 
     @classmethod
     def from_s3(cls, bucket: str, key: str, s3_client=None):
