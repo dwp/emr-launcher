@@ -7,7 +7,8 @@ import os
 
 import boto3
 import yaml
-from pythonjsonlogger import jsonlogger
+
+from logger import configure_log
 
 PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
@@ -34,28 +35,6 @@ def retrieve_secrets(secret_name):
     except Exception as e:
         logging.info(secret_name + " Secret not found in secretsmanager")
     return secret_value
-
-
-def configure_log():
-    """Configure JSON logger."""
-    log_level = os.environ.get("EMR_LAUNCHER_LOG_LEVEL", "INFO").upper()
-    numeric_level = getattr(logging, log_level, None)
-    if not isinstance(numeric_level, int):
-        raise ValueError("Invalid log level: %s" % log_level)
-    if len(logging.getLogger().handlers) > 0:
-        logging.getLogger().setLevel(log_level)
-    else:
-        logging.basicConfig(level=log_level)
-    logger = logging.getLogger()
-    logger.propagate = False
-    console_handler = logging.StreamHandler()
-    formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-    )
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    return logger
-
 
 def read_s3_config(bucket: str, key: str, required: bool = True) -> dict:
     config = {}
