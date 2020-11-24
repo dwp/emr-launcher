@@ -13,15 +13,20 @@ TEST_PATH_CONFIG_INSTANCES = f"{os.path.dirname(__file__)}/test_instances.yaml"
 TEST_PATH_CONFIG_CONFIGURATIONS = f"{os.path.dirname(__file__)}/test_configurations.yaml"
 
 
+def load_local_yaml(path):
+    with open(path, "r") as f:
+        return yaml.safe_load(f.read())
+
+
 class TestConfig:
+
     def test_reads_local_config(self):
         actual = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_CLUSTER)
+        expected = load_local_yaml(TEST_PATH_CONFIG_CLUSTER)
 
-        with open(TEST_PATH_CONFIG_CLUSTER, "r") as f:
-            expected = yaml.safe_load(f.read())
         assert actual == expected
 
-    def test_throws_correct_exception_local_file_not_found(self):
+    def test_raises_correct_exception_local_file_not_found(self):
         with pytest.raises(ConfigNotFoundError):
             ClusterConfig.from_local(file_path="nonexistent_path")
 
@@ -45,7 +50,7 @@ class TestConfig:
 
         assert expected == actual
 
-    def test_throws_correct_exception_s3_not_found(self):
+    def test_raises_correct_exception_s3_not_found(self):
         s3 = boto3.client('s3')
 
         bucket = "config_bucket"
@@ -84,9 +89,36 @@ class TestConfig:
         assert expected is not actual
         assert actual == expected
 
-    def test_find_replace_throws_not_list(self):
+    def test_find_replace_raises_not_list(self):
         config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
 
         with pytest.raises(TypeError):
             config.find_replace("Instances.Ec2SubnetId", "Name", "MASTER", lambda x: {**x, "Name": "TEST"})
 
+    def test_get_nested_node(self):
+        config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
+        actual = config.get_nested_node("Instances.Ec2SubnetId")
+        expected = load_local_yaml(TEST_PATH_CONFIG_INSTANCES)["Instances"]["Ec2SubnetId"]
+
+        assert actual == expected
+
+    def test_insert_nested_node(self):
+        config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
+        expected = {"TestKey": "TestValue"}
+
+        config.insert_nested_node("Instances.TestNode", expected)
+        actual = config["Instances"]["TestNode"]
+
+        assert actual == expected
+
+    def test_insert_raises_existing_path(self):
+        config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
+        with pytest.raises(TypeError):
+            config.insert_nested_node("Instances.Ec2SubnetId", "testvalue")
+
+    def test_extend_nested_list(self):
+        config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
+        expected = {"InstanceFleetType": "CORE", "Name": "TEST"}
+        config.extend_nested_list("Instances.InstanceFleets", [expected])
+
+        assert expected in config["Instances"]["InstanceFleets"]
