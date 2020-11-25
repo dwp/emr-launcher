@@ -58,7 +58,7 @@ def build_config(override: dict = None, extend: dict = None, additional_step_arg
     return cluster_config
 
 
-def handler(event=None) -> dict:
+def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
 
     if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
