@@ -18,11 +18,13 @@ def deprecated(func):
 
     @functools.wraps(func)
     def new_func(*args, **kwargs):
-        warnings.simplefilter('always', DeprecationWarning)  # turn off filter
-        warnings.warn("Call to deprecated function {}.".format(func.__name__),
-                      category=DeprecationWarning,
-                      stacklevel=2)
-        warnings.simplefilter('default', DeprecationWarning)  # reset filter
+        warnings.simplefilter("always", DeprecationWarning)  # turn off filter
+        warnings.warn(
+            "Call to deprecated function {}.".format(func.__name__),
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        warnings.simplefilter("default", DeprecationWarning)  # reset filter
         return func(*args, **kwargs)
 
     return new_func
@@ -50,13 +52,18 @@ def read_config(config_type: str, required: bool = True) -> ClusterConfig:
     local_config_dir = os.getenv("EMR_LAUNCHER_CONFIG_DIR")
     try:
         if local_config_dir:
-            logger.info("Locating configs", extra={"local_config_dir": {local_config_dir}})
-            config = ClusterConfig.from_local(file_path=os.path.join(local_config_dir, f"{config_type}.yaml"))
+            logger.info(
+                "Locating configs", extra={"local_config_dir": {local_config_dir}}
+            )
+            config = ClusterConfig.from_local(
+                file_path=os.path.join(local_config_dir, f"{config_type}.yaml")
+            )
         else:
             s3_bucket = os.getenv("EMR_LAUNCHER_CONFIG_S3_BUCKET")
             s3_folder = os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER")
             logger.info(
-                "Locating configs", extra={"s3_bucket": s3_bucket, "s3_folder": s3_folder}
+                "Locating configs",
+                extra={"s3_bucket": s3_bucket, "s3_folder": s3_folder},
             )
             s3_key = f"{s3_folder}/{config_type}.yaml"
             config = ClusterConfig.from_s3(bucket=s3_bucket, key=s3_key)
@@ -108,11 +115,11 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
     print(correlation_id, "\n", s3_prefix)
     try:
         if (
-                next(
-                    (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                    None,
-                )
-                is not None
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )
+            is not None
         ):
             pdm_script_args = next(
                 (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
@@ -131,11 +138,11 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
 
     try:
         if (
-                next(
-                    (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
-                    None,
-                )
-                is not None
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )
+            is not None
         ):
             adg_script_args = next(
                 (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),

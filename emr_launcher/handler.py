@@ -10,7 +10,13 @@ import boto3
 import yaml
 
 from emr_launcher.logger import configure_log
-from emr_launcher.util import read_config, deprecated, get_payload, Payload, add_command_line_params
+from emr_launcher.util import (
+    read_config,
+    deprecated,
+    get_payload,
+    Payload,
+    add_command_line_params,
+)
 from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
 from emr_launcher.ClusterConfig import ClusterConfig
 
@@ -18,7 +24,9 @@ PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
 
 
-def build_config(override: dict = None, extend: dict = None, additional_step_args: dict = None) -> ClusterConfig:
+def build_config(
+    override: dict = None, extend: dict = None, additional_step_args: dict = None
+) -> ClusterConfig:
     cluster_config = read_config("cluster")
     cluster_config.update(read_config("configurations", False))
 
@@ -28,10 +36,15 @@ def build_config(override: dict = None, extend: dict = None, additional_step_arg
         item["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
         return item
 
-    cluster_config.find_replace("Configurations", "Classification", "spark-hive-site",
-                                replace_connection_password)
-    cluster_config.find_replace("Configurations", "Classification", "hive-site",
-                                replace_connection_password)
+    cluster_config.find_replace(
+        "Configurations",
+        "Classification",
+        "spark-hive-site",
+        replace_connection_password,
+    )
+    cluster_config.find_replace(
+        "Configurations", "Classification", "hive-site", replace_connection_password
+    )
 
     cluster_config.update(read_config("instances"))
     cluster_config.update(read_config("steps", False))
@@ -46,7 +59,9 @@ def build_config(override: dict = None, extend: dict = None, additional_step_arg
 
     if additional_step_args is not None:
         for [step_name, args] in additional_step_args.items():
-            step = next((s for s in cluster_config["Steps"] if s["Name"] == step_name), None)
+            step = next(
+                (s for s in cluster_config["Steps"] if s["Name"] == step_name), None
+            )
             if step is None:
                 continue
             step_args = step["HadoopJarStep"]["Args"]
@@ -69,7 +84,9 @@ def handler(event=None, context=None) -> dict:
     except:
         raise TypeError("Invalid request payload")
 
-    cluster_config = build_config(payload.overrides, payload.extend, payload.additional_step_args)
+    cluster_config = build_config(
+        payload.overrides, payload.extend, payload.additional_step_args
+    )
     return emr_launch_cluster(cluster_config)
 
 
@@ -96,15 +113,15 @@ def old_handler(event=None) -> dict:
 
     try:
         if (
-                next(
-                    (
-                            sub
-                            for sub in cluster_config["Configurations"]
-                            if sub["Classification"] == "spark-hive-site"
-                    ),
-                    None,
-                )
-                is not None
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )
+            is not None
         ):
             secret_name = next(
                 (
@@ -128,15 +145,15 @@ def old_handler(event=None) -> dict:
 
     try:
         if (
-                next(
-                    (
-                            sub
-                            for sub in cluster_config["Configurations"]
-                            if sub["Classification"] == "hive-site"
-                    ),
-                    None,
-                )
-                is not None
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )
+            is not None
         ):
             secret_name = next(
                 (

@@ -38,7 +38,13 @@ class ClusterConfig(MutableMapping, ABC):
         parent_node = self.get_nested_node(".".join(node_keys))
         parent_node[key_to_create] = value
 
-    def find_replace(self, path: str, condition_key: str, condition_value: str, replace_func: Callable):
+    def find_replace(
+        self,
+        path: str,
+        condition_key: str,
+        condition_value: str,
+        replace_func: Callable,
+    ):
         """
         Finds a node in the list at the specified `path`(of the form NAME_1.NAME_2), with the attribute
         `condition_key` equal to `condition_value`, and replaces it with the return value of `replace_func`.
@@ -51,7 +57,9 @@ class ClusterConfig(MutableMapping, ABC):
         if not isinstance(node, list):
             raise TypeError(f"Path {path} does not correspond to a list")
 
-        found_item = next((item for item in node if item[condition_key] == condition_value), None)
+        found_item = next(
+            (item for item in node if item[condition_key] == condition_value), None
+        )
 
         if found_item is not None:
             replaced_item = replace_func(found_item)
@@ -63,7 +71,9 @@ class ClusterConfig(MutableMapping, ABC):
     def _deep_merge(self, node: MutableMapping, other: MutableMapping):
         for key in other:
             if key in node:
-                if isinstance(node[key], MutableMapping) and isinstance(other[key], MutableMapping):
+                if isinstance(node[key], MutableMapping) and isinstance(
+                    other[key], MutableMapping
+                ):
                     self._deep_merge(node[key], other[key])
                 elif node[key] == other[key]:
                     pass  # same leaf value
@@ -96,7 +106,9 @@ class ClusterConfig(MutableMapping, ABC):
     @classmethod
     def from_s3(cls, bucket: str, key: str, s3_client=None):
         try:
-            return ClusterConfig(yaml.safe_load(s3_get_object_body(bucket, key, s3_client)))
+            return ClusterConfig(
+                yaml.safe_load(s3_get_object_body(bucket, key, s3_client))
+            )
         except Exception as e:
             raise ConfigNotFoundError(e)
 
