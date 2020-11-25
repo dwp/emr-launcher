@@ -122,3 +122,14 @@ class TestConfig:
         config.extend_nested_list("Instances.InstanceFleets", [expected])
 
         assert expected in config["Instances"]["InstanceFleets"]
+
+    def test_override(self):
+        config = ClusterConfig.from_local(file_path=TEST_PATH_CONFIG_INSTANCES)
+        overrides = {
+            "Instances": {
+                "Ec2SubnetId": "Test_Subnet_Id"
+            }
+        }
+        config.override(overrides)
+        assert config["Instances"]["Ec2SubnetId"] == "Test_Subnet_Id"
+        assert config["Instances"]["EmrManagedMasterSecurityGroup"] == "$MASTER_SG"

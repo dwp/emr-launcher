@@ -1,9 +1,10 @@
 from abc import ABC
 
-import boto3
 import yaml
+from typing import Callable
 
 from collections.abc import MutableMapping
+from emr_launcher.aws import s3_get_object_body
 
 
 class ConfigNotFoundError(Exception):
@@ -25,6 +26,10 @@ class ClusterConfig(MutableMapping, ABC):
             return None
 
     def insert_nested_node(self, path: str, value: any):
+        """
+        Inserts `value` at the specified `path` (of the form NAME_1.NAME_2). A TypeError is raised
+        if the node already exists.
+        """
         if self.get_nested_node(path) is not None:
             raise TypeError(f"Node at path {path} already exists")
 
@@ -33,7 +38,12 @@ class ClusterConfig(MutableMapping, ABC):
         parent_node = self.get_nested_node(".".join(node_keys))
         parent_node[key_to_create] = value
 
-    def find_replace(self, path: str, condition_key: str, condition_value: str, replace_func: callable):
+    def find_replace(self, path: str, condition_key: str, condition_value: str, replace_func: Callable):
+        """
+        Finds a node in the list at the specified `path`(of the form NAME_1.NAME_2), with the attribute
+        `condition_key` equal to `condition_value`, and replaces it with the return value of `replace_func`.
+        `replace_func` must return a value.
+        """
         node = self.get_nested_node(path)
         if node is None:
             return
@@ -45,29 +55,36 @@ class ClusterConfig(MutableMapping, ABC):
 
         if found_item is not None:
             replaced_item = replace_func(found_item)
-            updated_partition = [
-                *filter(lambda item: item[condition_key] != condition_value, node),
-                replaced_item]
-            node.clear()
-            node.extend(updated_partition)
+            if replaced_item is None:
+                raise TypeError("Replacement function must return replacement value")
+            found_item_index = node.index(found_item)
+            node[found_item_index] = replaced_item
+
+    def _deep_merge(self, node: MutableMapping, other: MutableMapping):
+        for key in other:
+            if key in node:
+                if isinstance(node[key], MutableMapping) and isinstance(other[key], MutableMapping):
+                    self._deep_merge(node[key], other[key])
+                elif node[key] == other[key]:
+                    pass  # same leaf value
+                else:
+                    node[key] = other[key]
+            else:
+                node[key] = other[key]
 
     def override(self, other: MutableMapping):
         """
         Deep merges this config with another MutableMapping. Values in `other` override the current ones.
         Nested lists are not merged but replaced altogether.
         """
-        for key in other:
-            if key in self._config:
-                if isinstance(self._config[key], MutableMapping) and isinstance(other[key], MutableMapping):
-                    self.override(other[key])
-                elif self._config[key] == other[key]:
-                    pass  # same leaf value
-                else:
-                    self._config[key] = other[key]
-            else:
-                self._config[key] = other[key]
+        self._deep_merge(self._config, other)
 
     def extend_nested_list(self, path: str, items: list):
+        """
+        Extends the list at `path` with the provided `items`. If node does not exist it will be created.
+        :param path: Path in the config of the form NAME_1.NAME_2
+        :param items:  Items to add to the existing list
+        """
         node = self.get_nested_node(path)
         if node is None:
             self.insert_nested_node(path, items)
@@ -78,14 +95,10 @@ class ClusterConfig(MutableMapping, ABC):
 
     @classmethod
     def from_s3(cls, bucket: str, key: str, s3_client=None):
-        s3 = s3_client if s3_client is not None else boto3.client('s3')
-
         try:
-            response = s3.get_object(Bucket=bucket, Key=key)
-            config = response["Body"].read().decode("utf8")
-            return ClusterConfig(yaml.safe_load(config))
-        except (s3.exceptions.NoSuchBucket, s3.exceptions.NoSuchKey):
-            raise ConfigNotFoundError
+            return ClusterConfig(yaml.safe_load(s3_get_object_body(bucket, key, s3_client)))
+        except Exception as e:
+            raise ConfigNotFoundError(e)
 
     @classmethod
     def from_local(cls, file_path: str):
@@ -110,3 +123,9 @@ class ClusterConfig(MutableMapping, ABC):
 
     def __delitem__(self, key):
         del self._config[key]
+
+    def __str__(self):
+        return self._config.__str__()
+
+    def __repr__(self):
+        return self._config.__repr__()

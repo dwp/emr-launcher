@@ -3,10 +3,11 @@ import functools
 
 import logging
 import os
-import ast
+import json
 
-import boto3
+from dataclasses import dataclass
 
+from emr_launcher.logger import configure_log
 from emr_launcher.ClusterConfig import ClusterConfig, ConfigNotFoundError
 
 
@@ -25,20 +26,6 @@ def deprecated(func):
         return func(*args, **kwargs)
 
     return new_func
-
-
-def retrieve_secrets(secret_name):
-    try:
-        session = boto3.session.Session()
-        client = session.client(service_name="secretsmanager")
-        response = client.get_secret_value(SecretId=secret_name)
-        response_string = response["SecretString"]
-        response_dict = ast.literal_eval(response_string)
-        secret_value = response_dict["password"]
-
-        return secret_value
-    except Exception:
-        logging.info(secret_name + " Secret not found in secretsmanager")
 
 
 def read_config(config_type: str, required: bool = True) -> ClusterConfig:
@@ -61,22 +48,22 @@ def read_config(config_type: str, required: bool = True) -> ClusterConfig:
     logger = logging.getLogger("emr_launcher")
 
     local_config_dir = os.getenv("EMR_LAUNCHER_CONFIG_DIR")
-
-    if local_config_dir:
-        logger.info("Locating configs", extra={"local_config_dir": {local_config_dir}})
-        config = ClusterConfig.from_local(file_path=os.path.join(local_config_dir, f"{config_type}.yaml"))
-    else:
-        s3_bucket = os.getenv("EMR_LAUNCHER_CONFIG_S3_BUCKET")
-        s3_folder = os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER")
-        logger.info(
-            "Locating configs", extra={"s3_bucket": s3_bucket, "s3_folder": s3_folder}
-        )
-        s3_key = f"{s3_folder}/{config_type}.yaml"
-        config = ClusterConfig.from_s3(bucket=s3_bucket, key=s3_key)
-
-    logger.debug(f"{config_type} config:", config)
     try:
-        return config.read_config()
+        if local_config_dir:
+            logger.info("Locating configs", extra={"local_config_dir": {local_config_dir}})
+            config = ClusterConfig.from_local(file_path=os.path.join(local_config_dir, f"{config_type}.yaml"))
+        else:
+            s3_bucket = os.getenv("EMR_LAUNCHER_CONFIG_S3_BUCKET")
+            s3_folder = os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER")
+            logger.info(
+                "Locating configs", extra={"s3_bucket": s3_bucket, "s3_folder": s3_folder}
+            )
+            s3_key = f"{s3_folder}/{config_type}.yaml"
+            config = ClusterConfig.from_s3(bucket=s3_bucket, key=s3_key)
+
+        logger.debug(f"{config_type} config:", config)
+
+        return config
     except ConfigNotFoundError:
         if required:
             raise
@@ -84,4 +71,85 @@ def read_config(config_type: str, required: bool = True) -> ClusterConfig:
             logger.debug(f"Config type {config_type} not found")
 
 
+def get_payload(event: dict):
+    if event is None:
+        return {}
+    elif "Records" in event:
+        json_payload = event["Records"][0]["Sns"]["Message"]
+        return json.loads(json_payload)
+    else:
+        return event
 
+
+@dataclass
+class Payload:
+    overrides: dict = None
+    extend: dict = None
+    additional_step_args: dict = None
+
+
+STEPS = "Steps"
+NAME_KEY = "Name"
+SOURCE = "source"
+SUBMIT_JOB = "submit-job"
+HADOOP_JAR_STEP = "HadoopJarStep"
+ARGS = "Args"
+CORRELATION_ID = "--correlation_id"
+S3_PREFIX = "--s3_prefix"
+
+
+@deprecated
+def add_command_line_params(cluster_config, correlation_id, s3_prefix):
+    """
+    Adding command line arguments to ADG and PDM EMR steps scripts. First if block in Try is for PDM and the second one
+    is for ADG.
+    """
+    logger = configure_log()
+    print(correlation_id, "\n", s3_prefix)
+    try:
+        if (
+                next(
+                    (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                    None,
+                )
+                is not None
+        ):
+            pdm_script_args = next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            pdm_script_args.append(CORRELATION_ID)
+            pdm_script_args.append(correlation_id)
+            pdm_script_args.append(S3_PREFIX)
+            pdm_script_args.append(s3_prefix)
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
+    except Exception as e:
+        logger.error(e)
+
+    try:
+        if (
+                next(
+                    (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                    None,
+                )
+                is not None
+        ):
+            adg_script_args = next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            adg_script_args.append(CORRELATION_ID)
+            adg_script_args.append(correlation_id)
+            adg_script_args.append(S3_PREFIX)
+            adg_script_args.append(s3_prefix)
+            print(adg_script_args)
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
+
+    except Exception as e:
+        logger.error(e)
