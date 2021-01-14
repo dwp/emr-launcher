@@ -25,7 +25,10 @@ PAYLOAD_CORRELATION_ID = "correlation_id"
 
 
 def build_config(
-    s3_overrides: dict = None, override: dict = None, extend: dict = None, additional_step_args: dict = None
+    s3_overrides: dict = None,
+    override: dict = None,
+    extend: dict = None,
+    additional_step_args: dict = None,
 ) -> ClusterConfig:
     cluster_config = read_config("cluster", s3_overrides=s3_overrides)
     cluster_config.update(read_config("configurations", s3_overrides, False))
@@ -85,7 +88,10 @@ def handler(event=None, context=None) -> dict:
         raise TypeError("Invalid request payload")
 
     cluster_config = build_config(
-        payload.s3_overrides, payload.overrides, payload.extend, payload.additional_step_args
+        payload.s3_overrides,
+        payload.overrides,
+        payload.extend,
+        payload.additional_step_args,
     )
     return emr_launch_cluster(cluster_config)
 

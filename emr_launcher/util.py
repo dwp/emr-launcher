@@ -35,11 +35,13 @@ def get_s3_location(s3_overrides):
     s3_folder_override = s3_overrides.get("emr_launcher_config_s3_folder")
     return (
         s3_bucket_override or os.getenv("EMR_LAUNCHER_CONFIG_S3_BUCKET"),
-        s3_folder_override or os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER")
+        s3_folder_override or os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER"),
     )
 
 
-def read_config(config_type: str, s3_overrides: dict = None, required: bool = True) -> ClusterConfig:
+def read_config(
+    config_type: str, s3_overrides: dict = None, required: bool = True
+) -> ClusterConfig:
     """Reads an EMR cluster configuration file.
 
     Reads configuration details of an EMR cluster from either a local file or
