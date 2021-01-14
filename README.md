@@ -6,9 +6,11 @@ Lambda based EMR Cluster Launcher
 Given a set of YAML files that specify an EMR cluster configuration, it will
 call the EMR API to generate that cluster.
 
-It can also modify the cluster configuration based on the event by supplying `overrides`,
+It can also modify the cluster configuration based on the event by supplying `s3_overrides`, `overrides`,
 `extend` or `additional_step_args` in the event body.
 
+ * `s3_overrides`
+    * The optional s3 location overrides for the EMR config files, made up of s3 id and s3 folder path to config files.
  * `overrides`
     * Additional cluster configuration to be merged with the existing configuration.
     * It must have the same structure as the yaml configuration.
@@ -25,6 +27,10 @@ It can also modify the cluster configuration based on the event by supplying `ov
 #### Event Body Example
 ```$json
 {
+    "s3_overrides": {
+        "emr_launcher_config_s3_bucket": "new-s3-bucket-name",
+        "emr_launcher_config_s3_folder": "new-s3-folder-path",
+    },
     "overrides": {
         "Name": "new-cluster-name",
         "Instances": {

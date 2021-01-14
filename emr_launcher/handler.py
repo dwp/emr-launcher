@@ -25,10 +25,13 @@ PAYLOAD_CORRELATION_ID = "correlation_id"
 
 
 def build_config(
-    override: dict = None, extend: dict = None, additional_step_args: dict = None
+    s3_overrides: dict = None,
+    override: dict = None,
+    extend: dict = None,
+    additional_step_args: dict = None,
 ) -> ClusterConfig:
-    cluster_config = read_config("cluster")
-    cluster_config.update(read_config("configurations", False))
+    cluster_config = read_config("cluster", s3_overrides=s3_overrides)
+    cluster_config.update(read_config("configurations", s3_overrides, False))
 
     def replace_connection_password(item):
         secret_name = item["Properties"]["javax.jdo.option.ConnectionPassword"]
@@ -46,8 +49,8 @@ def build_config(
         "Configurations", "Classification", "hive-site", replace_connection_password
     )
 
-    cluster_config.update(read_config("instances"))
-    cluster_config.update(read_config("steps", False))
+    cluster_config.update(read_config("instances", s3_overrides=s3_overrides))
+    cluster_config.update(read_config("steps", s3_overrides, False))
 
     if override is not None:
         cluster_config.override(override)
@@ -85,7 +88,10 @@ def handler(event=None, context=None) -> dict:
         raise TypeError("Invalid request payload")
 
     cluster_config = build_config(
-        payload.overrides, payload.extend, payload.additional_step_args
+        payload.s3_overrides,
+        payload.overrides,
+        payload.extend,
+        payload.additional_step_args,
     )
     return emr_launch_cluster(cluster_config)
 

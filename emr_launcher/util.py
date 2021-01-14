@@ -30,7 +30,18 @@ def deprecated(func):
     return new_func
 
 
-def read_config(config_type: str, required: bool = True) -> ClusterConfig:
+def get_s3_location(s3_overrides):
+    s3_bucket_override = s3_overrides.get("emr_launcher_config_s3_bucket")
+    s3_folder_override = s3_overrides.get("emr_launcher_config_s3_folder")
+    return (
+        s3_bucket_override or os.getenv("EMR_LAUNCHER_CONFIG_S3_BUCKET"),
+        s3_folder_override or os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER"),
+    )
+
+
+def read_config(
+    config_type: str, s3_overrides: dict = None, required: bool = True
+) -> ClusterConfig:
     """Reads an EMR cluster configuration file.
 
     Reads configuration details of an EMR cluster from either a local file or
@@ -39,6 +50,8 @@ def read_config(config_type: str, required: bool = True) -> ClusterConfig:
     Parameters:
     config_type (str): The type of config file to read. Must be one of
                        `cluster`, `instances`, or `steps`.
+
+    s3_overrides (dict): The optional s3 location overrides for the EMR config files
 
     required (bool): Whether or not the configuration file should be required
                      to be present. If set to True and the configuration file
@@ -59,8 +72,9 @@ def read_config(config_type: str, required: bool = True) -> ClusterConfig:
                 file_path=os.path.join(local_config_dir, f"{config_type}.yaml")
             )
         else:
-            s3_bucket = os.getenv("EMR_LAUNCHER_CONFIG_S3_BUCKET")
-            s3_folder = os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER")
+            s3_bucket_location = get_s3_location(s3_overrides)
+            s3_bucket = s3_bucket_location[0]
+            s3_folder = s3_bucket_location[1]
             logger.info(
                 "Locating configs",
                 extra={"s3_bucket": s3_bucket, "s3_folder": s3_folder},
@@ -90,6 +104,7 @@ def get_payload(event: dict):
 
 @dataclass
 class Payload:
+    s3_overrides: dict = None
     overrides: dict = None
     extend: dict = None
     additional_step_args: dict = None
