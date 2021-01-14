@@ -138,3 +138,22 @@ class TestE2E:
         new_handler_call = mock_launch_cluster.call_args_list[1]
 
         assert old_handler_call == new_handler_call
+
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
+    @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
+    def test_uses_overrides_s3_location(
+            self, mock_from_s3: MagicMock, mock_launch_cluster: MagicMock, mock_retrieve_secrets: MagicMock
+    ):
+        del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
+        calls = [call(bucket="Test_S3_Bucket", key=f'Test_S3_Folder/cluster.yaml'), call(bucket="Test_S3_Bucket", key=f'Test_S3_Folder/configurations.yaml'), call(bucket="Test_S3_Bucket", key=f'Test_S3_Folder/instances.yaml'), call(bucket="Test_S3_Bucket", key=f'Test_S3_Folder/steps.yaml')]
+        mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
+
+        s3_overrides = {
+            "emr_launcher_config_s3_bucket": "Test_S3_Bucket",
+            "emr_launcher_config_s3_folder": "Test_S3_Folder"
+        }
+
+        handler({"s3_overrides": s3_overrides})
+        mock_launch_cluster.assert_called_once()
+        mock_from_s3.assert_has_calls(calls, any_order=True)
