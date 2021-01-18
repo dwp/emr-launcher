@@ -31,6 +31,11 @@ def deprecated(func):
 
 
 def get_s3_location(s3_overrides):
+    if s3_overrides is None:
+        return (
+            os.getenv("EMR_LAUNCHER_CONFIG_S3_BUCKET"),
+            os.getenv("EMR_LAUNCHER_CONFIG_S3_FOLDER"),
+        )
     s3_bucket_override = s3_overrides.get("emr_launcher_config_s3_bucket")
     s3_folder_override = s3_overrides.get("emr_launcher_config_s3_folder")
     return (
