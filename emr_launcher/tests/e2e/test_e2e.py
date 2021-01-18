@@ -148,7 +148,7 @@ class TestE2E:
         mock_launch_cluster: MagicMock,
         mock_retrieve_secrets: MagicMock,
     ):
-        if("EMR_LAUNCHER_CONFIG_DIR" in os.environ):
+        if "EMR_LAUNCHER_CONFIG_DIR" in os.environ:
             del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
 
         calls = [
@@ -168,7 +168,6 @@ class TestE2E:
         mock_launch_cluster.assert_called_once()
         mock_from_s3.assert_has_calls(calls, any_order=True)
 
-
     @patch("emr_launcher.handler.sm_retrieve_secrets")
     @patch("emr_launcher.handler.emr_launch_cluster")
     @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
@@ -178,7 +177,7 @@ class TestE2E:
         mock_launch_cluster: MagicMock,
         mock_retrieve_secrets: MagicMock,
     ):
-        if("EMR_LAUNCHER_CONFIG_DIR" in os.environ):
+        if "EMR_LAUNCHER_CONFIG_DIR" in os.environ:
             del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
         os.environ["EMR_LAUNCHER_CONFIG_S3_FOLDER"] = "s3_folder"
         os.environ["EMR_LAUNCHER_CONFIG_S3_BUCKET"] = "s3_bucket"
