@@ -148,7 +148,9 @@ class TestE2E:
         mock_launch_cluster: MagicMock,
         mock_retrieve_secrets: MagicMock,
     ):
-        del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
+        if "EMR_LAUNCHER_CONFIG_DIR" in os.environ:
+            del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
+
         calls = [
             call(bucket="Test_S3_Bucket", key=f"Test_S3_Folder/cluster.yaml"),
             call(bucket="Test_S3_Bucket", key=f"Test_S3_Folder/configurations.yaml"),
@@ -163,5 +165,31 @@ class TestE2E:
         }
 
         handler({"s3_overrides": s3_overrides})
+        mock_launch_cluster.assert_called_once()
+        mock_from_s3.assert_has_calls(calls, any_order=True)
+
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
+    @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
+    def test_uses_default_s3_location(
+        self,
+        mock_from_s3: MagicMock,
+        mock_launch_cluster: MagicMock,
+        mock_retrieve_secrets: MagicMock,
+    ):
+        if "EMR_LAUNCHER_CONFIG_DIR" in os.environ:
+            del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
+        os.environ["EMR_LAUNCHER_CONFIG_S3_FOLDER"] = "s3_folder"
+        os.environ["EMR_LAUNCHER_CONFIG_S3_BUCKET"] = "s3_bucket"
+
+        calls = [
+            call(bucket="s3_bucket", key=f"s3_folder/cluster.yaml"),
+            call(bucket="s3_bucket", key=f"s3_folder/configurations.yaml"),
+            call(bucket="s3_bucket", key=f"s3_folder/instances.yaml"),
+            call(bucket="s3_bucket", key=f"s3_folder/steps.yaml"),
+        ]
+        mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
+
+        handler()
         mock_launch_cluster.assert_called_once()
         mock_from_s3.assert_has_calls(calls, any_order=True)
