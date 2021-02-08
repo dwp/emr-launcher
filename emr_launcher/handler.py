@@ -22,6 +22,7 @@ from emr_launcher.ClusterConfig import ClusterConfig
 
 PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
+PAYLOAD_SNAPSHOT_TYPE = "snapshot_type"
 
 
 def build_config(
@@ -79,7 +80,8 @@ def build_config(
 def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
 
-    if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
+    if (PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload and PAYLOAD_SNAPSHOT_TYPE in payload) or \
+            (PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload):
         return old_handler(event)
 
     try:
@@ -106,12 +108,14 @@ def old_handler(event=None) -> dict:
     if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
         correlation_id = event[PAYLOAD_CORRELATION_ID]
         s3_prefix = event[PAYLOAD_S3_PREFIX]
+        snapshot_type = event[PAYLOAD_SNAPSHOT_TYPE]
         correlation_id_necessary = True
     elif "Records" in event:
         sns_message = event["Records"][0]["Sns"]
         payload = json.loads(sns_message["Message"])
         correlation_id = payload[PAYLOAD_CORRELATION_ID]
         s3_prefix = payload[PAYLOAD_S3_PREFIX]
+        snapshot_type = payload[PAYLOAD_SNAPSHOT_TYPE]
         correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
@@ -185,7 +189,7 @@ def old_handler(event=None) -> dict:
     cluster_config.update(read_config("steps", False))
 
     if correlation_id_necessary:
-        add_command_line_params(cluster_config, correlation_id, s3_prefix)
+        add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_type)
 
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
