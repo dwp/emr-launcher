@@ -80,8 +80,11 @@ def build_config(
 def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
 
-    if (PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload and PAYLOAD_SNAPSHOT_TYPE in payload) or \
-            (PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload):
+    if (
+        PAYLOAD_CORRELATION_ID in payload
+        and PAYLOAD_S3_PREFIX in payload
+        and PAYLOAD_SNAPSHOT_TYPE in payload
+    ) or (PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload):
         return old_handler(event)
 
     try:
@@ -189,7 +192,9 @@ def old_handler(event=None) -> dict:
     cluster_config.update(read_config("steps", False))
 
     if correlation_id_necessary:
-        add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_type)
+        add_command_line_params(
+            cluster_config, correlation_id, s3_prefix, snapshot_type
+        )
 
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
