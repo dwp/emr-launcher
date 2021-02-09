@@ -115,7 +115,9 @@ def old_handler(event=None) -> dict:
         correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
-    cluster_config.update(read_config("configurations", False))
+    cluster_config.update(
+        read_config(config_type="configurations", s3_overrides=None, required=False)
+    )
 
     try:
         if (
