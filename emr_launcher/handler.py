@@ -184,7 +184,9 @@ def old_handler(event=None) -> dict:
         logger.info(e)
 
     cluster_config.update(read_config("instances"))
-    cluster_config.update(read_config("steps", False))
+    cluster_config.update(
+        read_config(config_type="steps", s3_overrides=None, required=False)
+    )
 
     if correlation_id_necessary:
         add_command_line_params(cluster_config, correlation_id, s3_prefix)
