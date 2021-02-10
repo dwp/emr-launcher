@@ -117,6 +117,9 @@ class Payload:
 
 STEPS = "Steps"
 NAME_KEY = "Name"
+SNS_NOTIFICATION_STEP = "sns-notification"
+SNAPSHOT_TYPE_INCRMENTAL = "incremental"
+SOURCE = "source"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SUBMIT_JOB = "submit-job"
 HADOOP_JAR_STEP = "HadoopJarStep"
@@ -195,3 +198,8 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
 
     except Exception as e:
         logger.error(e)
+
+
+def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
+    if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL:
+        del cluster_config[STEPS][SNS_NOTIFICATION_STEP]
