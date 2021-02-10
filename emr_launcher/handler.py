@@ -20,12 +20,9 @@ from emr_launcher.util import (
 )
 from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
 from emr_launcher.ClusterConfig import ClusterConfig
-
 PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
 PAYLOAD_SNAPSHOT_TYPE = "snapshot_type"
-
-
 def build_config(
     s3_overrides: dict = None,
     override: dict = None,
