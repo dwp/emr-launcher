@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
-import ast
 import json
-import logging
-import os
-from dataclasses import dataclass
 
-import boto3
-import yaml
-
+from emr_launcher.ClusterConfig import ClusterConfig
+from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
 from emr_launcher.logger import configure_log
 from emr_launcher.util import (
     read_config,
@@ -18,19 +13,20 @@ from emr_launcher.util import (
     add_command_line_params,
     adg_trim_steps_for_incremental,
 )
-from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
-from emr_launcher.ClusterConfig import ClusterConfig
 
 PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
 PAYLOAD_SNAPSHOT_TYPE = "snapshot_type"
+ADG_NAME = "analytical-dataset-generator"
+SNAPSHOT_TYPE_FULL = "full"
+SNAPSHOT_TYPE_INCREMENTAL = "incremental"
 
 
 def build_config(
-    s3_overrides: dict = None,
-    override: dict = None,
-    extend: dict = None,
-    additional_step_args: dict = None,
+        s3_overrides: dict = None,
+        override: dict = None,
+        extend: dict = None,
+        additional_step_args: dict = None,
 ) -> ClusterConfig:
     cluster_config = read_config("cluster", s3_overrides=s3_overrides)
     cluster_config.update(read_config("configurations", s3_overrides, False))
@@ -82,9 +78,9 @@ def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
 
     if (
-        PAYLOAD_CORRELATION_ID in payload
-        and PAYLOAD_S3_PREFIX in payload
-        and PAYLOAD_SNAPSHOT_TYPE in payload
+            PAYLOAD_CORRELATION_ID in payload
+            and PAYLOAD_S3_PREFIX in payload
+            and PAYLOAD_SNAPSHOT_TYPE in payload
     ) or (PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload):
         return old_handler(event)
 
@@ -127,7 +123,7 @@ def old_handler(event=None) -> dict:
     snapshot_type = get_value(PAYLOAD_SNAPSHOT_TYPE, event)
 
     if "Records" in event or (
-        PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event
+            PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event
     ):
         correlation_id_necessary = True
 
@@ -138,15 +134,15 @@ def old_handler(event=None) -> dict:
 
     try:
         if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "spark-hive-site"
-                ),
-                None,
-            )
-            is not None
+                next(
+                    (
+                            sub
+                            for sub in cluster_config["Configurations"]
+                            if sub["Classification"] == "spark-hive-site"
+                    ),
+                    None,
+                )
+                is not None
         ):
             secret_name = next(
                 (
@@ -170,15 +166,15 @@ def old_handler(event=None) -> dict:
 
     try:
         if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config["Configurations"]
-                    if sub["Classification"] == "hive-site"
-                ),
-                None,
-            )
-            is not None
+                next(
+                    (
+                            sub
+                            for sub in cluster_config["Configurations"]
+                            if sub["Classification"] == "hive-site"
+                    ),
+                    None,
+                )
+                is not None
         ):
             secret_name = next(
                 (
@@ -203,15 +199,15 @@ def old_handler(event=None) -> dict:
     if snapshot_type is not None:
         try:
             if (
-                next(
-                    (
-                        sub
-                        for sub in cluster_config["Tags"]
-                        if sub["Key"] == "snapshot_type"
-                    ),
-                    None,
-                )
-                is not None
+                    next(
+                        (
+                                sub
+                                for sub in cluster_config["Tags"]
+                                if sub["Key"] == "snapshot_type"
+                        ),
+                        None,
+                    )
+                    is not None
             ):
                 next(
                     (
@@ -235,6 +231,10 @@ def old_handler(event=None) -> dict:
         )
         adg_trim_steps_for_incremental(cluster_config, snapshot_type)
 
+    # Renaming ADG cluster based on snapshot type full/incremental
+    cluster_name = cluster_config["Name"]
+    if cluster_name == ADG_NAME:
+        update_adg_cluster_name(cluster_config, snapshot_type)
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
     resp = emr_launch_cluster(cluster_config)
@@ -242,3 +242,8 @@ def old_handler(event=None) -> dict:
     logger.debug(resp)
 
     return resp
+
+
+def update_adg_cluster_name(cluster_config, snapshot_type):
+    cluster_config["Name"] = (f"{ADG_NAME}-{SNAPSHOT_TYPE_INCREMENTAL}" if snapshot_type == SNAPSHOT_TYPE_INCREMENTAL
+        else f"{ADG_NAME}-{SNAPSHOT_TYPE_FULL}")
