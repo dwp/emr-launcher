@@ -30,6 +30,7 @@ def build_config(
     override: dict = None,
     extend: dict = None,
     additional_step_args: dict = None,
+    snapshot_type: str = None,
 ) -> ClusterConfig:
     cluster_config = read_config("cluster", s3_overrides=s3_overrides)
     cluster_config.update(read_config("configurations", s3_overrides, False))
@@ -49,6 +50,14 @@ def build_config(
     cluster_config.find_replace(
         "Configurations", "Classification", "hive-site", replace_connection_password
     )
+
+    if snapshot_type is not None:
+        cluster_config.find_replace(
+            "Tags",
+            "Key",
+            "snapshot_type",
+            snapshot_type,
+        )
 
     cluster_config.update(read_config("instances", s3_overrides=s3_overrides))
     cluster_config.update(read_config("steps", s3_overrides, False))
@@ -92,11 +101,14 @@ def handler(event=None, context=None) -> dict:
     except:
         raise TypeError("Invalid request payload")
 
+    snapshot_type = payload[PAYLOAD_SNAPSHOT_TYPE] if PAYLOAD_SNAPSHOT_TYPE in payload else None
+
     cluster_config = build_config(
         payload.s3_overrides,
         payload.overrides,
         payload.extend,
         payload.additional_step_args,
+        snapshot_type,
     )
     return emr_launch_cluster(cluster_config)
 
@@ -189,6 +201,30 @@ def old_handler(event=None) -> dict:
             )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
     except Exception as e:
         logger.info(e)
+
+    if snapshot_type is not None:
+        try:
+            if (
+                next(
+                    (
+                        sub
+                        for sub in cluster_config["Tags"]
+                        if sub["Key"] == "snapshot_type"
+                    ),
+                    None,
+                )
+                is not None
+            ):
+                next(
+                    (
+                        sub
+                        for sub in cluster_config["Tags"]
+                        if sub["Key"] == "snapshot_type"
+                    ),
+                    None,
+                )["Value"] = snapshot_type
+        except Exception as e:
+            logger.info(e)
 
     cluster_config.update(read_config("instances"))
     cluster_config.update(
