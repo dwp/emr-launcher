@@ -13,16 +13,13 @@ from emr_launcher.util import (
     add_command_line_params,
     adg_trim_steps_for_incremental,
 )
+
 PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
 PAYLOAD_SNAPSHOT_TYPE = "snapshot_type"
 ADG_NAME = "analytical-dataset-generator"
 SNAPSHOT_TYPE_FULL = "full"
 SNAPSHOT_TYPE_INCREMENTAL = "incremental"
-
-
-
-
 
 
 def build_config(
@@ -76,9 +73,9 @@ def build_config(
                 step["HadoopJarStep"]["Args"] = args
 
     return cluster_config
-def handler(
-        event=None, context=None
-) -> dict:
+
+
+def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
 
     if (
