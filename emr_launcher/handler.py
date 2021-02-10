@@ -111,14 +111,14 @@ def old_handler(event=None) -> dict:
     if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
         correlation_id = event[PAYLOAD_CORRELATION_ID]
         s3_prefix = event[PAYLOAD_S3_PREFIX]
-        snapshot_type = event.get(PAYLOAD_SNAPSHOT_TYPE, "full")
+        snapshot_type = event.get(PAYLOAD_SNAPSHOT_TYPE, None)
         correlation_id_necessary = True
     elif "Records" in event:
         sns_message = event["Records"][0]["Sns"]
         payload = json.loads(sns_message["Message"])
         correlation_id = payload[PAYLOAD_CORRELATION_ID]
         s3_prefix = payload[PAYLOAD_S3_PREFIX]
-        snapshot_type = payload.get(PAYLOAD_SNAPSHOT_TYPE, "full")
+        snapshot_type = payload.get(PAYLOAD_SNAPSHOT_TYPE, None)
         correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
