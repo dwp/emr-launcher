@@ -109,7 +109,7 @@ def get_value(key, event):
         payload = json.loads(sns_message["Message"])
         if key in payload:
             return payload[key]
-    
+
     return "NOT_SET"
 
 
@@ -124,8 +124,10 @@ def old_handler(event=None) -> dict:
     correlation_id = get_value(PAYLOAD_CORRELATION_ID, event)
     s3_prefix = get_value(PAYLOAD_S3_PREFIX, event)
     snapshot_type = get_value(PAYLOAD_SNAPSHOT_TYPE, event)
-    
-    if "Records" in event or (PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event):
+
+    if "Records" in event or (
+        PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event
+    ):
         correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
