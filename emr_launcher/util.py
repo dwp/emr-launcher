@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from emr_launcher.logger import configure_log
 from emr_launcher.ClusterConfig import ClusterConfig, ConfigNotFoundError
 
+NAME_KEY = "Name"
+
 
 def deprecated(func):
     """This is a decorator which can be used to mark functions
@@ -201,5 +203,9 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
 
 
 def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
-    if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL:
-        del cluster_config[STEPS][SNS_NOTIFICATION_STEP]
+    if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
+        steps = cluster_config[STEPS]
+        for step_count in range(0, len(steps)):
+            if steps[step_count][NAME_KEY] == SNS_NOTIFICATION_STEP:
+                del cluster_config[STEPS][step_count]
+                break

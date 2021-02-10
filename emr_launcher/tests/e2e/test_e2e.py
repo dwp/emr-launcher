@@ -6,6 +6,17 @@ from unittest.mock import patch, MagicMock, call
 
 from emr_launcher.handler import handler
 from emr_launcher.ClusterConfig import ClusterConfig
+from emr_launcher.util import adg_trim_steps_for_incremental
+
+STEPS_KEY = "Steps"
+
+SNAPSHOT_TYPE_INCREMENTAL = "incremental"
+
+SUBMIT_JOB = "submit-job"
+
+NAME_KEY = "Name"
+
+SNS_NOTIFICATION_STEP = "sns-notification"
 
 EMR_LAUNCHER_CONFIG_DIR = os.path.dirname(__file__)
 
@@ -200,3 +211,21 @@ class TestE2E:
         handler()
         mock_launch_cluster.assert_called_once()
         mock_from_s3.assert_has_calls(calls, any_order=True)
+
+def test_adg_trim_steps_for_incremental():
+    actual_cluster_config = {STEPS_KEY:[{NAME_KEY: SNS_NOTIFICATION_STEP}, {NAME_KEY: SUBMIT_JOB}]}
+    expected_cluster_config = {STEPS_KEY:[{NAME_KEY: SUBMIT_JOB}]}
+    adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
+    assert actual_cluster_config == expected_cluster_config
+
+def test_adg_trim_steps_for_no_steps():
+    actual_cluster_config = {STEPS_KEY:[]}
+    expected_cluster_config = {STEPS_KEY:[]}
+    adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
+    assert actual_cluster_config == expected_cluster_config
+
+def test_adg_trim_steps_with_no_sns_notification_step():
+    actual_cluster_config = {STEPS_KEY:[{NAME_KEY: SUBMIT_JOB}]}
+    expected_cluster_config = {STEPS_KEY:[{NAME_KEY: SUBMIT_JOB}]}
+    adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
+    assert actual_cluster_config == expected_cluster_config
