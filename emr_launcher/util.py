@@ -123,10 +123,11 @@ HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
 CORRELATION_ID = "--correlation_id"
 S3_PREFIX = "--s3_prefix"
+SNAPSHOT_TYPE = "--snapshot_type"
 
 
 @deprecated
-def add_command_line_params(cluster_config, correlation_id, s3_prefix):
+def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_type):
     """
     Adding command line arguments to ADG and PDM EMR steps scripts. First if block in Try is for PDM and the second one
     is for ADG.
@@ -172,6 +173,8 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix):
             adg_script_args.append(correlation_id)
             adg_script_args.append(S3_PREFIX)
             adg_script_args.append(s3_prefix)
+            adg_script_args.append(SNAPSHOT_TYPE)
+            adg_script_args.append(snapshot_type)
             print(adg_script_args)
             next(
                 (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
