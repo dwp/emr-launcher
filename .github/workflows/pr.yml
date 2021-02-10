@@ -2,7 +2,7 @@ name: PR
 
 on:
   pull_request:
-    types: [assigned, opened, synchronize, reopened]
+    types: [assigned, opened, synchronize, reopened, edited]
     paths-ignore:
       - '.circleci/**'
       - '.github/workflows/**'
