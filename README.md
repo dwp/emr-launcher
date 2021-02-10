@@ -24,6 +24,7 @@ It can also modify the cluster configuration based on the event by supplying `s3
     * Mapping of <string, array> where keys are step names, and the values are
     arguments to be added to the step.
 
+
 #### Event Body Example
 ```$json
 {
