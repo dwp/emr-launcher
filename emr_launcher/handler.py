@@ -19,12 +19,19 @@ PAYLOAD_SNAPSHOT_TYPE = "snapshot_type"
 ADG_NAME = "analytical-dataset-generator"
 SNAPSHOT_TYPE_FULL = "full"
 SNAPSHOT_TYPE_INCREMENTAL = "incremental"
+
+
+
+
+
+
 def build_config(
     s3_overrides: dict = None,
     override: dict = None,
     extend: dict = None,
     additional_step_args: dict = None,
 ) -> ClusterConfig:
+
     cluster_config = read_config("cluster", s3_overrides=s3_overrides)
     cluster_config.update(read_config("configurations", s3_overrides, False))
 
@@ -69,9 +76,9 @@ def build_config(
                 step["HadoopJarStep"]["Args"] = args
 
     return cluster_config
-
-
-def handler(event=None, context=None) -> dict:
+def handler(
+        event=None, context=None
+) -> dict:
     payload = get_payload(event)
 
     if (
