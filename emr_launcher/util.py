@@ -117,7 +117,6 @@ class Payload:
 
 STEPS = "Steps"
 NAME_KEY = "Name"
-SOURCE = "source"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SUBMIT_JOB = "submit-job"
 HADOOP_JAR_STEP = "HadoopJarStep"
