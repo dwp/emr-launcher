@@ -212,20 +212,25 @@ class TestE2E:
         mock_launch_cluster.assert_called_once()
         mock_from_s3.assert_has_calls(calls, any_order=True)
 
+
 def test_adg_trim_steps_for_incremental():
-    actual_cluster_config = {STEPS_KEY:[{NAME_KEY: SNS_NOTIFICATION_STEP}, {NAME_KEY: SUBMIT_JOB}]}
-    expected_cluster_config = {STEPS_KEY:[{NAME_KEY: SUBMIT_JOB}]}
+    actual_cluster_config = {
+        STEPS_KEY: [{NAME_KEY: SNS_NOTIFICATION_STEP}, {NAME_KEY: SUBMIT_JOB}]
+    }
+    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
     adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
     assert actual_cluster_config == expected_cluster_config
+
 
 def test_adg_trim_steps_for_no_steps():
-    actual_cluster_config = {STEPS_KEY:[]}
-    expected_cluster_config = {STEPS_KEY:[]}
+    actual_cluster_config = {STEPS_KEY: []}
+    expected_cluster_config = {STEPS_KEY: []}
     adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
     assert actual_cluster_config == expected_cluster_config
 
+
 def test_adg_trim_steps_with_no_sns_notification_step():
-    actual_cluster_config = {STEPS_KEY:[{NAME_KEY: SUBMIT_JOB}]}
-    expected_cluster_config = {STEPS_KEY:[{NAME_KEY: SUBMIT_JOB}]}
+    actual_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
+    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
     adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
     assert actual_cluster_config == expected_cluster_config
