@@ -129,7 +129,14 @@ class TestE2E:
         handler(
             {
                 "additional_step_args": {
-                    "submit-job": ["--correlation_id", "test", "--s3_prefix", "test", "--snapshot_type", "NOT_SET"]
+                    "submit-job": [
+                        "--correlation_id",
+                        "test",
+                        "--s3_prefix",
+                        "test",
+                        "--snapshot_type",
+                        "NOT_SET",
+                    ]
                 }
             }
         )
