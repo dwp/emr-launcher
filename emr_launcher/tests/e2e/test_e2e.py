@@ -180,7 +180,6 @@ class TestE2E:
     @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
     def test_uses_default_s3_location(
         self,
-        mock_from_s3: MagicMock,
         mock_launch_cluster: MagicMock,
         mock_retrieve_secrets: MagicMock,
     ):
