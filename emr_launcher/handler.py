@@ -101,7 +101,9 @@ def handler(event=None, context=None) -> dict:
     except:
         raise TypeError("Invalid request payload")
 
-    snapshot_type = payload[PAYLOAD_SNAPSHOT_TYPE] if PAYLOAD_SNAPSHOT_TYPE in payload else None
+    snapshot_type = (
+        payload[PAYLOAD_SNAPSHOT_TYPE] if PAYLOAD_SNAPSHOT_TYPE in payload else None
+    )
 
     cluster_config = build_config(
         payload.s3_overrides,
