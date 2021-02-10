@@ -19,6 +19,11 @@ jobs:
         with:
           python-version: 3.7
 
+      - name: Run tests
+        run: |
+          pip install -r requirements.txt
+          python -m pytest -v
+
       - name: Install Black
         run: pip install black
 
@@ -37,8 +42,3 @@ jobs:
           git checkout $GITHUB_HEAD_REF
           git commit -am "Fixup: Format Python code with Black"
           git push
-
-      - name: Run tests
-        run: |
-          pip install -r requirements.txt
-          python -m pytest -v
