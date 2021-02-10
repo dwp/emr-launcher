@@ -102,6 +102,18 @@ def handler(event=None, context=None) -> dict:
     return emr_launch_cluster(cluster_config)
 
 
+def get_value(key, event):
+    if key in event:
+        return event[key]
+    elif "Records" in event:
+        sns_message = event["Records"][0]["Sns"]
+        payload = json.loads(sns_message["Message"])
+        if key in payload:
+            return payload[key]
+
+    return "NOT_SET"
+
+
 @deprecated
 def old_handler(event=None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
@@ -109,17 +121,14 @@ def old_handler(event=None) -> dict:
     correlation_id_necessary = False
     # If when this lambda is triggered via API
     # Elif when this lambda is triggered via SNS
-    if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
-        correlation_id = event[PAYLOAD_CORRELATION_ID]
-        s3_prefix = event[PAYLOAD_S3_PREFIX]
-        snapshot_type = event[PAYLOAD_SNAPSHOT_TYPE]
-        correlation_id_necessary = True
-    elif "Records" in event:
-        sns_message = event["Records"][0]["Sns"]
-        payload = json.loads(sns_message["Message"])
-        correlation_id = payload[PAYLOAD_CORRELATION_ID]
-        s3_prefix = payload[PAYLOAD_S3_PREFIX]
-        snapshot_type = payload[PAYLOAD_SNAPSHOT_TYPE]
+
+    correlation_id = get_value(PAYLOAD_CORRELATION_ID, event)
+    s3_prefix = get_value(PAYLOAD_S3_PREFIX, event)
+    snapshot_type = get_value(PAYLOAD_SNAPSHOT_TYPE, event)
+
+    if "Records" in event or (
+        PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event
+    ):
         correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
@@ -190,6 +199,30 @@ def old_handler(event=None) -> dict:
             )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
     except Exception as e:
         logger.info(e)
+
+    if snapshot_type is not None:
+        try:
+            if (
+                next(
+                    (
+                        sub
+                        for sub in cluster_config["Tags"]
+                        if sub["Key"] == "snapshot_type"
+                    ),
+                    None,
+                )
+                is not None
+            ):
+                next(
+                    (
+                        sub
+                        for sub in cluster_config["Tags"]
+                        if sub["Key"] == "snapshot_type"
+                    ),
+                    None,
+                )["Value"] = snapshot_type
+        except Exception as e:
+            logger.info(e)
 
     cluster_config.update(read_config("instances"))
     cluster_config.update(
