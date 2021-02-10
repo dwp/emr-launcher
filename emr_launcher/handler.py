@@ -16,6 +16,7 @@ from emr_launcher.util import (
     get_payload,
     Payload,
     add_command_line_params,
+    adg_trim_steps_for_incremental,
 )
 from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
 from emr_launcher.ClusterConfig import ClusterConfig
@@ -199,6 +200,7 @@ def old_handler(event=None) -> dict:
         add_command_line_params(
             cluster_config, correlation_id, s3_prefix, snapshot_type
         )
+        adg_trim_steps_for_incremental(cluster_config, snapshot_type)
 
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
