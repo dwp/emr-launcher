@@ -1,7 +1,7 @@
 name: Commit Format
 
 on:
-  push:
+  pull_request:
     paths-ignore:
       - '.circleci/**'
       - '.github/workflows/**'
