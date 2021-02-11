@@ -117,6 +117,7 @@ class Payload:
 
 STEPS = "Steps"
 NAME_KEY = "Name"
+CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SOURCE = "source"
 SUBMIT_JOB = "submit-job"
 HADOOP_JAR_STEP = "HadoopJarStep"
@@ -137,13 +138,38 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
     try:
         if (
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
+            )
+            is not None
+        ):
+            pdm_script_args = next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
+            )[HADOOP_JAR_STEP][ARGS]
+            pdm_script_args.append(CORRELATION_ID)
+            pdm_script_args.append(correlation_id)
+            pdm_script_args.append(S3_PREFIX)
+            pdm_script_args.append(s3_prefix)
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
+            )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
+
+        if (
+            next(
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == CREATE_HIVE_DYNAMO_TABLE
+                ),
                 None,
             )
             is not None
         ):
             pdm_script_args = next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == CREATE_HIVE_DYNAMO_TABLE
+                ),
                 None,
             )[HADOOP_JAR_STEP][ARGS]
             pdm_script_args.append(CORRELATION_ID)
@@ -151,7 +177,11 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
             pdm_script_args.append(S3_PREFIX)
             pdm_script_args.append(s3_prefix)
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == CREATE_HIVE_DYNAMO_TABLE
+                ),
                 None,
             )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
     except Exception as e:
