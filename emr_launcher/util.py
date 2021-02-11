@@ -119,6 +119,7 @@ class Payload:
 
 STEPS = "Steps"
 NAME_KEY = "Name"
+CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SNS_NOTIFICATION_STEP = "sns-notification"
 SNAPSHOT_TYPE_INCRMENTAL = "incremental"
 SOURCE = "source"
@@ -140,6 +141,26 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
     logger = configure_log()
     print(correlation_id, "\n", s3_prefix)
     try:
+        if (
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )
+            is not None
+        ):
+            pdm_script_args = next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            pdm_script_args.append(CORRELATION_ID)
+            pdm_script_args.append(correlation_id)
+            pdm_script_args.append(S3_PREFIX)
+            pdm_script_args.append(s3_prefix)
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
+
         if (
             next(
                 (
