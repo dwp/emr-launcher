@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from emr_launcher.logger import configure_log
 from emr_launcher.ClusterConfig import ClusterConfig, ConfigNotFoundError
 
+NAME_KEY = "Name"
+
 
 def deprecated(func):
     """This is a decorator which can be used to mark functions
@@ -118,7 +120,10 @@ class Payload:
 STEPS = "Steps"
 NAME_KEY = "Name"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
+SNS_NOTIFICATION_STEP = "sns-notification"
+SNAPSHOT_TYPE_INCRMENTAL = "incremental"
 SOURCE = "source"
+CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SUBMIT_JOB = "submit-job"
 HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
@@ -213,3 +218,12 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
 
     except Exception as e:
         logger.error(e)
+
+
+def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
+    if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
+        steps = cluster_config[STEPS]
+        for step_count in range(0, len(steps)):
+            if steps[step_count][NAME_KEY] == SNS_NOTIFICATION_STEP:
+                del cluster_config[STEPS][step_count]
+                break

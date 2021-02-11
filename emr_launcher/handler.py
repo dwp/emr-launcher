@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
-import ast
 import json
-import logging
-import os
-from dataclasses import dataclass
 
-import boto3
-import yaml
-
+from emr_launcher.ClusterConfig import ClusterConfig
+from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
 from emr_launcher.logger import configure_log
 from emr_launcher.util import (
     read_config,
@@ -16,13 +11,15 @@ from emr_launcher.util import (
     get_payload,
     Payload,
     add_command_line_params,
+    adg_trim_steps_for_incremental,
 )
-from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
-from emr_launcher.ClusterConfig import ClusterConfig
 
 PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
 PAYLOAD_SNAPSHOT_TYPE = "snapshot_type"
+ADG_NAME = "analytical-dataset-generator"
+SNAPSHOT_TYPE_FULL = "full"
+SNAPSHOT_TYPE_INCREMENTAL = "incremental"
 
 
 def build_config(
@@ -30,7 +27,6 @@ def build_config(
     override: dict = None,
     extend: dict = None,
     additional_step_args: dict = None,
-    snapshot_type: str = None,
 ) -> ClusterConfig:
     cluster_config = read_config("cluster", s3_overrides=s3_overrides)
     cluster_config.update(read_config("configurations", s3_overrides, False))
@@ -50,14 +46,6 @@ def build_config(
     cluster_config.find_replace(
         "Configurations", "Classification", "hive-site", replace_connection_password
     )
-
-    if snapshot_type is not None:
-        cluster_config.find_replace(
-            "Tags",
-            "Key",
-            "snapshot_type",
-            snapshot_type,
-        )
 
     cluster_config.update(read_config("instances", s3_overrides=s3_overrides))
     cluster_config.update(read_config("steps", s3_overrides, False))
@@ -101,18 +89,25 @@ def handler(event=None, context=None) -> dict:
     except:
         raise TypeError("Invalid request payload")
 
-    snapshot_type = (
-        payload[PAYLOAD_SNAPSHOT_TYPE] if PAYLOAD_SNAPSHOT_TYPE in payload else None
-    )
-
     cluster_config = build_config(
         payload.s3_overrides,
         payload.overrides,
         payload.extend,
         payload.additional_step_args,
-        snapshot_type,
     )
     return emr_launch_cluster(cluster_config)
+
+
+def get_value(key, event):
+    if key in event:
+        return event[key]
+    elif "Records" in event:
+        sns_message = event["Records"][0]["Sns"]
+        payload = json.loads(sns_message["Message"])
+        if key in payload:
+            return payload[key]
+
+    return "NOT_SET"
 
 
 @deprecated
@@ -122,17 +117,14 @@ def old_handler(event=None) -> dict:
     correlation_id_necessary = False
     # If when this lambda is triggered via API
     # Elif when this lambda is triggered via SNS
-    if PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event:
-        correlation_id = event[PAYLOAD_CORRELATION_ID]
-        s3_prefix = event[PAYLOAD_S3_PREFIX]
-        snapshot_type = event[PAYLOAD_SNAPSHOT_TYPE]
-        correlation_id_necessary = True
-    elif "Records" in event:
-        sns_message = event["Records"][0]["Sns"]
-        payload = json.loads(sns_message["Message"])
-        correlation_id = payload[PAYLOAD_CORRELATION_ID]
-        s3_prefix = payload[PAYLOAD_S3_PREFIX]
-        snapshot_type = payload[PAYLOAD_SNAPSHOT_TYPE]
+
+    correlation_id = get_value(PAYLOAD_CORRELATION_ID, event)
+    s3_prefix = get_value(PAYLOAD_S3_PREFIX, event)
+    snapshot_type = get_value(PAYLOAD_SNAPSHOT_TYPE, event)
+
+    if "Records" in event or (
+        PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event
+    ):
         correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
@@ -237,7 +229,12 @@ def old_handler(event=None) -> dict:
         add_command_line_params(
             cluster_config, correlation_id, s3_prefix, snapshot_type
         )
+        adg_trim_steps_for_incremental(cluster_config, snapshot_type)
 
+    # Renaming ADG cluster based on snapshot type full/incremental
+    cluster_name = cluster_config["Name"]
+    if cluster_name == ADG_NAME:
+        update_adg_cluster_name(cluster_config, snapshot_type)
     logger.debug("Requested cluster parameters", extra=cluster_config)
 
     resp = emr_launch_cluster(cluster_config)
@@ -245,3 +242,11 @@ def old_handler(event=None) -> dict:
     logger.debug(resp)
 
     return resp
+
+
+def update_adg_cluster_name(cluster_config, snapshot_type):
+    cluster_config["Name"] = (
+        f"{ADG_NAME}-{SNAPSHOT_TYPE_INCREMENTAL}"
+        if snapshot_type == SNAPSHOT_TYPE_INCREMENTAL
+        else f"{ADG_NAME}-{SNAPSHOT_TYPE_FULL}"
+    )
