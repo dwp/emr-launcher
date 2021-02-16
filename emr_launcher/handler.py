@@ -230,6 +230,7 @@ def old_handler(event=None) -> dict:
             cluster_config, correlation_id, s3_prefix, snapshot_type
         )
         adg_trim_steps_for_incremental(cluster_config, snapshot_type)
+        adg_trim_steps_for_full(cluster_config, snapshot_type)
 
     # Renaming ADG cluster based on snapshot type full/incremental
     cluster_name = cluster_config["Name"]

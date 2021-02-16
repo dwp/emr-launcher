@@ -121,7 +121,9 @@ STEPS = "Steps"
 NAME_KEY = "Name"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SNS_NOTIFICATION_STEP = "sns-notification"
+BUILD_DAYMINUS1_STEP = "build-day-1-"
 SNAPSHOT_TYPE_INCRMENTAL = "incremental"
+SNAPSHOT_TYPE_FULL = "full"
 SOURCE = "source"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SUBMIT_JOB = "submit-job"
@@ -228,5 +230,13 @@ def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
         steps = cluster_config[STEPS]
         for step_count in range(0, len(steps)):
             if steps[step_count][NAME_KEY] == SNS_NOTIFICATION_STEP:
+                del cluster_config[STEPS][step_count]
+                break
+
+def adg_trim_steps_for_full(cluster_config, snapshot_type):
+    if snapshot_type == SNAPSHOT_TYPE_FULL and STEPS in cluster_config:
+        steps = cluster_config[STEPS]
+        for step_count in range(0, len(steps)):
+            if steps[step_count][NAME_KEY].find(BUILD_DAYMINUS1_STEP) != -1 :
                 del cluster_config[STEPS][step_count]
                 break
