@@ -12,7 +12,7 @@ STEPS_KEY = "Steps"
 
 SNAPSHOT_TYPE_INCREMENTAL = "incremental"
 
-SNAPSHOT_TYPE_FULL="full"
+SNAPSHOT_TYPE_FULL = "full"
 
 SUBMIT_JOB = "submit-job"
 
@@ -239,6 +239,7 @@ def test_adg_trim_steps_with_no_sns_notification_step():
     adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
     assert actual_cluster_config == expected_cluster_config
 
+
 def test_adg_trim_steps_for_full():
     actual_cluster_config = {
         STEPS_KEY: [{NAME_KEY: "build-day-1-ContractClaimant"}, {NAME_KEY: SUBMIT_JOB}]
@@ -246,6 +247,7 @@ def test_adg_trim_steps_for_full():
     expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
     adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
     assert actual_cluster_config == expected_cluster_config
+
 
 def test_adg_trim_steps_for_full_no_steps():
     actual_cluster_config = {STEPS_KEY: []}
