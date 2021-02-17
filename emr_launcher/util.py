@@ -233,11 +233,12 @@ def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
                 del cluster_config[STEPS][step_count]
                 break
 
-
 def adg_trim_steps_for_full(cluster_config, snapshot_type):
+    new_cluster_config = []
     if snapshot_type == SNAPSHOT_TYPE_FULL and STEPS in cluster_config:
         steps = cluster_config[STEPS]
         for step_count in range(0, len(steps)):
-            if steps[step_count][NAME_KEY].find(BUILD_DAYMINUS1_STEP) != -1:
-                del cluster_config[STEPS][step_count]
-                break
+            if steps[step_count][NAME_KEY].find(BUILD_DAYMINUS1_STEP) != 0:
+                new_cluster_config.append(cluster_config[STEPS][step_count])
+    cluster_config = {STEPS:new_cluster_config}
+    return cluster_config
