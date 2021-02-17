@@ -7,6 +7,7 @@ from unittest.mock import patch, MagicMock, call
 from emr_launcher.handler import handler
 from emr_launcher.ClusterConfig import ClusterConfig
 from emr_launcher.util import adg_trim_steps_for_incremental
+from emr_launcher.util import adg_trim_steps_for_full
 
 STEPS_KEY = "Steps"
 
