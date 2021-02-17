@@ -12,6 +12,7 @@ from emr_launcher.util import (
     Payload,
     add_command_line_params,
     adg_trim_steps_for_incremental,
+    adg_trim_steps_for_full,
 )
 
 PAYLOAD_S3_PREFIX = "s3_prefix"
