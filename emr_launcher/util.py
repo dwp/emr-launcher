@@ -236,7 +236,7 @@ def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
 
 def adg_trim_steps_for_full(cluster_config, snapshot_type):
     delete_list = []
-    if snapshot_type == SNAPSHOT_TYPE_FULL and STEPS in cluster_config:
+    if snapshot_type != SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
         steps = cluster_config[STEPS]
         for step_count in range(0, len(steps)):
             if steps[step_count][NAME_KEY].find(BUILD_DAYMINUS1_STEP) != -1:
