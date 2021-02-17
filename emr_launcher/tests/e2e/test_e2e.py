@@ -243,7 +243,10 @@ def test_adg_trim_steps_with_no_sns_notification_step():
 
 def test_adg_trim_steps_for_full():
     actual_cluster_config = {
-        STEPS_KEY: [{NAME_KEY: f"{BUILD_DAYMINUS1_STEP}ContractClaimant"}, {NAME_KEY: SUBMIT_JOB}]
+        STEPS_KEY: [
+            {NAME_KEY: f"{BUILD_DAYMINUS1_STEP}ContractClaimant"},
+            {NAME_KEY: SUBMIT_JOB},
+        ]
     }
     expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
     adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
