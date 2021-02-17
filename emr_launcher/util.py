@@ -233,6 +233,7 @@ def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
                 del cluster_config[STEPS][step_count]
                 break
 
+
 def adg_trim_steps_for_full(cluster_config, snapshot_type):
     delete_list = []
     if snapshot_type == SNAPSHOT_TYPE_FULL and STEPS in cluster_config:
