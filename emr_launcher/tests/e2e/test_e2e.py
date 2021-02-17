@@ -256,7 +256,7 @@ def test_adg_trim_steps_for_full():
 def test_adg_trim_steps_for_full_no_steps():
     actual_cluster_config = {STEPS_KEY: []}
     expected_cluster_config = {STEPS_KEY: []}
-     adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
+    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
     assert actual_cluster_config == expected_cluster_config
 
 
