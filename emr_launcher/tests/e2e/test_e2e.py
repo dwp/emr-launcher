@@ -7,16 +7,21 @@ from unittest.mock import patch, MagicMock, call
 from emr_launcher.handler import handler
 from emr_launcher.ClusterConfig import ClusterConfig
 from emr_launcher.util import adg_trim_steps_for_incremental
+from emr_launcher.util import adg_trim_steps_for_full
 
 STEPS_KEY = "Steps"
 
 SNAPSHOT_TYPE_INCREMENTAL = "incremental"
+
+SNAPSHOT_TYPE_FULL = "full"
 
 SUBMIT_JOB = "submit-job"
 
 NAME_KEY = "Name"
 
 SNS_NOTIFICATION_STEP = "sns-notification"
+
+BUILD_DAYMINUS1_STEP = "build-day-1-"
 
 EMR_LAUNCHER_CONFIG_DIR = os.path.dirname(__file__)
 
@@ -233,4 +238,44 @@ def test_adg_trim_steps_with_no_sns_notification_step():
     actual_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
     expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
     adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
+    assert actual_cluster_config == expected_cluster_config
+
+
+def test_adg_trim_steps_for_full():
+    actual_cluster_config = {
+        STEPS_KEY: [
+            {NAME_KEY: f"{BUILD_DAYMINUS1_STEP}ContractClaimant"},
+            {NAME_KEY: SUBMIT_JOB},
+        ]
+    }
+    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
+    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
+    assert actual_cluster_config == expected_cluster_config
+
+
+def test_adg_trim_steps_for_full_no_steps():
+    actual_cluster_config = {STEPS_KEY: []}
+    expected_cluster_config = {STEPS_KEY: []}
+    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
+    assert actual_cluster_config == expected_cluster_config
+
+
+def test_adg_trim_steps_for_full_with_no_day_minus_one_step():
+    actual_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
+    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
+    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
+    assert actual_cluster_config == expected_cluster_config
+
+
+def test_adg_trim_steps_for_full_multiple_steps():
+    actual_cluster_config = {
+        STEPS_KEY: [
+            {NAME_KEY: f"{BUILD_DAYMINUS1_STEP}ContractClaimant"},
+            {NAME_KEY: f"{BUILD_DAYMINUS1_STEP}Statement"},
+            {NAME_KEY: f"{BUILD_DAYMINUS1_STEP}ToDo"},
+            {NAME_KEY: SUBMIT_JOB},
+        ]
+    }
+    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
+    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
     assert actual_cluster_config == expected_cluster_config
