@@ -249,21 +249,21 @@ def test_adg_trim_steps_for_full():
         ]
     }
     expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
-    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
+    actual_cluster_config = adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
     assert actual_cluster_config == expected_cluster_config
 
 
 def test_adg_trim_steps_for_full_no_steps():
     actual_cluster_config = {STEPS_KEY: []}
     expected_cluster_config = {STEPS_KEY: []}
-    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
+    actual_cluster_config = adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
     assert actual_cluster_config == expected_cluster_config
 
 
 def test_adg_trim_steps_for_full_with_no_day_minus_one_step():
     actual_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
     expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
-    adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
+    actual_cluster_config = adg_trim_steps_for_full(actual_cluster_config, SNAPSHOT_TYPE_FULL)
     assert actual_cluster_config == expected_cluster_config
 
 def test_adg_trim_steps_for_full_multiple_steps():
