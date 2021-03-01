@@ -227,13 +227,21 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
     try:
         if (
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME),
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME
+                ),
                 None,
             )
             is not None
         ):
             adg_script_args = next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME),
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME
+                ),
                 None,
             )[HADOOP_JAR_STEP][ARGS]
             adg_script_args.append(CORRELATION_ID)
@@ -244,7 +252,11 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
             adg_script_args.append(snapshot_type)
             print(adg_script_args)
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME),
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME
+                ),
                 None,
             )[HADOOP_JAR_STEP][ARGS] = adg_script_args
 
