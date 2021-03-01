@@ -125,7 +125,7 @@ BUILD_DAYMINUS1_STEP = "build-day-1-"
 SNAPSHOT_TYPE_INCRMENTAL = "incremental"
 SNAPSHOT_TYPE_FULL = "full"
 SOURCE = "source"
-CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
+COURTESY_FLUSH_STEP_NAME = "courtesy-flush"
 SUBMIT_JOB = "submit-job"
 HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
@@ -218,6 +218,30 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
             print(adg_script_args)
             next(
                 (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
+
+    try:
+        if (
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME),
+                None,
+            )
+            is not None
+        ):
+            adg_script_args = next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            adg_script_args.append(CORRELATION_ID)
+            adg_script_args.append(correlation_id)
+            adg_script_args.append(S3_PREFIX)
+            adg_script_args.append(s3_prefix)
+            adg_script_args.append(SNAPSHOT_TYPE)
+            adg_script_args.append(snapshot_type)
+            print(adg_script_args)
+            next(
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME),
                 None,
             )[HADOOP_JAR_STEP][ARGS] = adg_script_args
 
