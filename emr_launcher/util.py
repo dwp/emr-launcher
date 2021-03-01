@@ -221,6 +221,9 @@ def add_command_line_params(cluster_config, correlation_id, s3_prefix, snapshot_
                 None,
             )[HADOOP_JAR_STEP][ARGS] = adg_script_args
 
+    except Exception as e:
+        logger.error(e)
+
     try:
         if (
             next(
