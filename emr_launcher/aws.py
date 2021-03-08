@@ -42,3 +42,15 @@ def emr_launch_cluster(config, emr_client=None):
     resp = emr_client.run_job_flow(**config)
     logger.info("Cluster submission successful")
     return resp
+
+
+def emr_cluster_add_tags(job_flow_id, tags, emr_client=None):
+    if emr_client is None:
+        emr_client = _get_client(service_name="emr")
+
+    logger.info("Adding additional tags to cluster")
+    for key, value in tags.items():
+        emr_client.add_tags(
+            ResourceId=job_flow_id, Tags=[{"Key": key, "Value": value},]
+        )
+    logger.info("Successfully added additional tags")
