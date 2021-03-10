@@ -152,6 +152,8 @@ class TestE2E:
                         "test",
                         "--snapshot_type",
                         "NOT_SET",
+                        "--export_date",
+                        "NOT_SET",
                     ]
                 }
             }
