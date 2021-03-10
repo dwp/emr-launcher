@@ -133,9 +133,14 @@ class TestE2E:
 
     @patch("emr_launcher.handler.sm_retrieve_secrets")
     @patch("emr_launcher.handler.emr_launch_cluster")
+    @patch("emr_launcher.handler.emr_cluster_add_tags")
     def test_handlers_same_result(
-        self, mock_launch_cluster: MagicMock, mock_retrieve_secrets: MagicMock
+        self,
+        mock_tag_cluster: MagicMock,
+        mock_launch_cluster: MagicMock,
+        mock_retrieve_secrets: MagicMock,
     ):
+
         mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
         handler({"correlation_id": "test", "s3_prefix": "test"})
 
