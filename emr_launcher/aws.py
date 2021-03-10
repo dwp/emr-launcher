@@ -50,7 +50,8 @@ def emr_cluster_add_tags(job_flow_id, tags, emr_client=None):
 
     logger.info("Adding additional tags to cluster")
     for key, value in tags.items():
-        emr_client.add_tags(
+        response = emr_client.add_tags(
             ResourceId=job_flow_id, Tags=[{"Key": key, "Value": value},]
         )
+        logger.debug(response)
     logger.info("Successfully added additional tags")

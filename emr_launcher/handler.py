@@ -250,9 +250,7 @@ def old_handler(event=None) -> dict:
     additional_tags = {"Correlation_Id": correlation_id}
     logger.debug(resp)
 
-    add_tags_response = emr_cluster_add_tags(job_flow_id, additional_tags)
-
-    logger.debug(add_tags_response)
+    emr_cluster_add_tags(job_flow_id, additional_tags)
 
     return resp
 
