@@ -3,6 +3,7 @@ import pytest
 import yaml
 
 from unittest.mock import patch, MagicMock, call
+from unittest import mock
 
 from emr_launcher.handler import handler
 from emr_launcher.ClusterConfig import ClusterConfig
@@ -163,7 +164,9 @@ class TestE2E:
         )
 
         job_flow_id = response["JobFlowId"]
-        mock_tag_cluster.assert_called_with(job_flow_id, {"correlation_id": "test"})
+        mock_tag_cluster.assert_called_with(
+            job_flow_id, {"correlation_id": "test"}, None
+        )
 
         assert mock_launch_cluster.call_count == 2
         new_handler_call = mock_launch_cluster.call_args_list[1]
