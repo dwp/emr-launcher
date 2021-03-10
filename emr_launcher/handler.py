@@ -79,7 +79,7 @@ def build_config(
 def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
 
-    if (PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload):
+    if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
         return old_handler(event)
 
     try:
