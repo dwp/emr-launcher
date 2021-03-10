@@ -272,6 +272,9 @@ def add_command_line_params(
                 None,
             )[HADOOP_JAR_STEP][ARGS] = adg_script_args
 
+    except Exception as e:
+        logger.error(e)
+
     try:
         if (
             next(
