@@ -224,7 +224,7 @@ def old_handler(event=None) -> dict:
     additional_tags = {
         "Correlation_Id": correlation_id,
         "snapshot_type": snapshot_type,
-        "export_date": export_date
+        "export_date": export_date,
     }
 
     logger.debug(resp)
