@@ -189,6 +189,10 @@ def add_command_line_params(
             pdm_script_args.append(correlation_id)
             pdm_script_args.append(S3_PREFIX)
             pdm_script_args.append(s3_prefix)
+            pdm_script_args.append(SNAPSHOT_TYPE)
+            pdm_script_args.append(snapshot_type)
+            pdm_script_args.append(EXPORT_DATE_COMMAND)
+            pdm_script_args.append(export_date)
             next(
                 (
                     sub
