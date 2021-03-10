@@ -162,7 +162,7 @@ class TestE2E:
                 }
             }
         )
-
+        assert 0==1
         # assert mock_tag_cluster.assert_called_with({"correlation_id": "test", "s3_prefix": "test"})
 
         assert mock_launch_cluster.call_count == 2
