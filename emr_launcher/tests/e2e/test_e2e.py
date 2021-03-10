@@ -146,6 +146,7 @@ class TestE2E:
 
         assert mock_launch_cluster.call_count == 1
         old_handler_call = mock_launch_cluster.call_args_list[0]
+        print(old_handler_call)
 
         handler(
             {
@@ -161,6 +162,8 @@ class TestE2E:
                 }
             }
         )
+
+        # assert mock_tag_cluster.assert_called_with({"correlation_id": "test", "s3_prefix": "test"})
 
         assert mock_launch_cluster.call_count == 2
         new_handler_call = mock_launch_cluster.call_args_list[1]
