@@ -146,9 +146,8 @@ class TestE2E:
 
         assert mock_launch_cluster.call_count == 1
         old_handler_call = mock_launch_cluster.call_args_list[0]
-        print(old_handler_call)
 
-        handler(
+        response = handler(
             {
                 "additional_step_args": {
                     "submit-job": [
@@ -162,8 +161,9 @@ class TestE2E:
                 }
             }
         )
-        assert 0==1
-        # assert mock_tag_cluster.assert_called_with({"correlation_id": "test", "s3_prefix": "test"})
+
+        job_flow_id = response["JobFlowId"]
+        mock_tag_cluster.assert_called_with(job_flow_id, {"correlation_id": "test"})
 
         assert mock_launch_cluster.call_count == 2
         new_handler_call = mock_launch_cluster.call_args_list[1]
