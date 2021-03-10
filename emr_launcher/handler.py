@@ -3,7 +3,11 @@
 import json
 
 from emr_launcher.ClusterConfig import ClusterConfig
-from emr_launcher.aws import sm_retrieve_secrets, emr_launch_cluster
+from emr_launcher.aws import (
+    sm_retrieve_secrets,
+    emr_launch_cluster,
+    emr_cluster_add_tags,
+)
 from emr_launcher.logger import configure_log
 from emr_launcher.util import (
     read_config,
@@ -263,7 +267,12 @@ def old_handler(event=None) -> dict:
 
     resp = emr_launch_cluster(cluster_config)
 
+    job_flow_id = resp["JobFlowId"]
+
+    additional_tags = {"Correlation_Id": correlation_id}
     logger.debug(resp)
+
+    emr_cluster_add_tags(job_flow_id, additional_tags)
 
     return resp
 

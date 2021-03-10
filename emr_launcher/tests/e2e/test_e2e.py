@@ -3,6 +3,7 @@ import pytest
 import yaml
 
 from unittest.mock import patch, MagicMock, call
+from unittest import mock
 
 from emr_launcher.handler import handler
 from emr_launcher.ClusterConfig import ClusterConfig
@@ -133,9 +134,14 @@ class TestE2E:
 
     @patch("emr_launcher.handler.sm_retrieve_secrets")
     @patch("emr_launcher.handler.emr_launch_cluster")
+    @patch("emr_launcher.handler.emr_cluster_add_tags")
     def test_handlers_same_result(
-        self, mock_launch_cluster: MagicMock, mock_retrieve_secrets: MagicMock
+        self,
+        mock_tag_cluster: MagicMock,
+        mock_launch_cluster: MagicMock,
+        mock_retrieve_secrets: MagicMock,
     ):
+
         mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
         handler({"correlation_id": "test", "s3_prefix": "test"})
 
@@ -158,6 +164,8 @@ class TestE2E:
                 }
             }
         )
+
+        mock_tag_cluster.assert_called_once()
 
         assert mock_launch_cluster.call_count == 2
         new_handler_call = mock_launch_cluster.call_args_list[1]
