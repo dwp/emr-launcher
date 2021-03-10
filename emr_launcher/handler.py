@@ -199,54 +199,6 @@ def old_handler(event=None) -> dict:
     except Exception as e:
         logger.info(e)
 
-    if snapshot_type is not None:
-        try:
-            if (
-                next(
-                    (
-                        sub
-                        for sub in cluster_config["Tags"]
-                        if sub["Key"] == "snapshot_type"
-                    ),
-                    None,
-                )
-                is not None
-            ):
-                next(
-                    (
-                        sub
-                        for sub in cluster_config["Tags"]
-                        if sub["Key"] == "snapshot_type"
-                    ),
-                    None,
-                )["Value"] = snapshot_type
-        except Exception as e:
-            logger.info(e)
-
-    if export_date is not None:
-        try:
-            if (
-                next(
-                    (
-                        sub
-                        for sub in cluster_config["Tags"]
-                        if sub["Key"] == "export_date"
-                    ),
-                    None,
-                )
-                is not None
-            ):
-                next(
-                    (
-                        sub
-                        for sub in cluster_config["Tags"]
-                        if sub["Key"] == "export_date"
-                    ),
-                    None,
-                )["Value"] = export_date
-        except Exception as e:
-            logger.info(e)
-
     cluster_config.update(read_config("instances"))
     cluster_config.update(
         read_config(config_type="steps", s3_overrides=None, required=False)
@@ -269,7 +221,12 @@ def old_handler(event=None) -> dict:
 
     job_flow_id = resp["JobFlowId"]
 
-    additional_tags = {"Correlation_Id": correlation_id}
+    additional_tags = {
+        "Correlation_Id": correlation_id,
+        "snapshot_type": snapshot_type,
+        "export_date": export_date
+    }
+
     logger.debug(resp)
 
     emr_cluster_add_tags(job_flow_id, additional_tags)
