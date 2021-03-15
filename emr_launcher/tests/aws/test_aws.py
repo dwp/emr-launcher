@@ -8,7 +8,6 @@ from moto import mock_emr
 
 
 class TestConfig:
-
     @mock_emr
     def test_emr_cluster_add_tags(self):
         emr_client = boto3.client("emr", region_name="eu-west-2")
@@ -21,7 +20,7 @@ class TestConfig:
                 "MasterInstanceType": "c3.medium",
                 "Placement": {"AvailabilityZone": "eu-west-2"},
                 "SlaveInstanceType": "c3.xlarge",
-            }
+            },
         )
         job_flow_id = resp["JobFlowId"]
         tags = {
