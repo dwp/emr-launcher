@@ -1,8 +1,25 @@
 import pytest
-from unittest.mock import patch
 
+from emr_launcher.aws import emr_cluster_add_tags
 
+import boto3
+
+from moto import mock_emr
 class TestConfig:
-    @patch("emr_launcher.aws._get_client")
-    def test_emr_cluster_add_tags(self, mock_get_client):
-        pass
+
+    @mock_emr
+    def test_emr_cluster_add_tags(self):
+        emr_client = boto3.client("emr")
+
+        resp = emr_client.run_job_flow(
+            Name="TestCluster",
+            Instances={
+                "InstanceCount": 3,
+                "KeepJobFlowAliveWhenNoSteps": True,
+                "MasterInstanceType": "c3.medium",
+                "Placement": {"AvailabilityZone": "eu-west-1"},
+                "SlaveInstanceType": "c3.xlarge",
+            }
+        )
+        print(resp)
+
