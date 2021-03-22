@@ -22,6 +22,8 @@ NAME_KEY = "Name"
 
 SNS_NOTIFICATION_STEP = "sns-notification"
 
+CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
+
 BUILD_DAYMINUS1_STEP = "build-day-1-"
 
 EMR_LAUNCHER_CONFIG_DIR = os.path.dirname(__file__)
@@ -230,9 +232,12 @@ class TestE2E:
 
 def test_adg_trim_steps_for_incremental():
     actual_cluster_config = {
-        STEPS_KEY: [{NAME_KEY: SNS_NOTIFICATION_STEP}, {NAME_KEY: SUBMIT_JOB}]
+        STEPS_KEY: [{NAME_KEY: SNS_NOTIFICATION_STEP},
+                    {NAME_KEY: SUBMIT_JOB},
+                    {NAME_KEY: CREATE_PDM_TRIGGER_STEP_NAME},
+                    {NAME_KEY: BUILD_DAYMINUS1_STEP}]
     }
-    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}]}
+    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}, {NAME_KEY: BUILD_DAYMINUS1_STEP}]}
     adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
     assert actual_cluster_config == expected_cluster_config
 

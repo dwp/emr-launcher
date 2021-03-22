@@ -319,11 +319,10 @@ def add_command_line_params(
 
 def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
     if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
-        steps = cluster_config[STEPS]
-        for step_count in range(0, len(steps)):
-            if steps[step_count][NAME_KEY] == SNS_NOTIFICATION_STEP:
+        for step_count, step_dict in enumerate(cluster_config[STEPS]):
+            print("hello")
+            if step_dict[NAME_KEY] == SNS_NOTIFICATION_STEP or step_dict[NAME_KEY] == CREATE_PDM_TRIGGER_STEP_NAME:
                 del cluster_config[STEPS][step_count]
-                break
 
 
 def adg_trim_steps_for_full(cluster_config, snapshot_type):
