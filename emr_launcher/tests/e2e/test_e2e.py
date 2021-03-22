@@ -232,12 +232,16 @@ class TestE2E:
 
 def test_adg_trim_steps_for_incremental():
     actual_cluster_config = {
-        STEPS_KEY: [{NAME_KEY: SNS_NOTIFICATION_STEP},
-                    {NAME_KEY: SUBMIT_JOB},
-                    {NAME_KEY: CREATE_PDM_TRIGGER_STEP_NAME},
-                    {NAME_KEY: BUILD_DAYMINUS1_STEP}]
+        STEPS_KEY: [
+            {NAME_KEY: SNS_NOTIFICATION_STEP},
+            {NAME_KEY: SUBMIT_JOB},
+            {NAME_KEY: CREATE_PDM_TRIGGER_STEP_NAME},
+            {NAME_KEY: BUILD_DAYMINUS1_STEP},
+        ]
     }
-    expected_cluster_config = {STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}, {NAME_KEY: BUILD_DAYMINUS1_STEP}]}
+    expected_cluster_config = {
+        STEPS_KEY: [{NAME_KEY: SUBMIT_JOB}, {NAME_KEY: BUILD_DAYMINUS1_STEP}]
+    }
     adg_trim_steps_for_incremental(actual_cluster_config, SNAPSHOT_TYPE_INCREMENTAL)
     assert actual_cluster_config == expected_cluster_config
 
