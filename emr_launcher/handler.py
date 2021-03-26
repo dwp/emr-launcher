@@ -131,8 +131,13 @@ def old_handler(event=None) -> dict:
         correlation_id_necessary = True
 
     cluster_config = read_config("cluster")
+    cluster_name = cluster_config["Name"]
+
+    # if ADG and if snapshot_type is incremental use "configurations_incremental"
+    config_yml_name = get_config_file_name(cluster_name, snapshot_type)
+
     cluster_config.update(
-        read_config(config_type="configurations", s3_overrides=None, required=False)
+        read_config(config_type=config_yml_name, s3_overrides=None, required=False)
     )
 
     try:
@@ -212,7 +217,6 @@ def old_handler(event=None) -> dict:
         adg_trim_steps_for_full(cluster_config, snapshot_type)
 
     # Renaming ADG cluster based on snapshot type full/incremental
-    cluster_name = cluster_config["Name"]
     if cluster_name == ADG_NAME:
         update_adg_cluster_name(cluster_config, snapshot_type)
     logger.debug("Requested cluster parameters", extra=cluster_config)
@@ -232,6 +236,13 @@ def old_handler(event=None) -> dict:
     emr_cluster_add_tags(job_flow_id, additional_tags)
 
     return resp
+
+
+def get_config_file_name(cluster_name, snapshot_type):
+    if cluster_name == ADG_NAME and snapshot_type == SNAPSHOT_TYPE_INCREMENTAL:
+        return "configurations_incremental"
+    
+    return"configurations"
 
 
 def update_adg_cluster_name(cluster_config, snapshot_type):
