@@ -241,7 +241,6 @@ def old_handler(event=None) -> dict:
 def get_config_file_name(cluster_name, snapshot_type):
     if cluster_name == ADG_NAME and snapshot_type == SNAPSHOT_TYPE_INCREMENTAL:
         return "configurations_incremental"
-
     return "configurations"
 
 
