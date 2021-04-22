@@ -128,7 +128,7 @@ SOURCE = "source"
 COURTESY_FLUSH_STEP_NAME = "courtesy-flush"
 CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
 SUBMIT_JOB = "submit-job"
-CREATE_DATABASES = "create-databases"
+CREATE_CLIVE_DATABASES = "create-clive-databases"
 HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
 CORRELATION_ID = "--correlation_id"
@@ -212,7 +212,7 @@ def add_command_line_params(
                 (
                     sub
                     for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_DATABASES
+                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
                 ),
                 None,
             )
@@ -222,7 +222,7 @@ def add_command_line_params(
                 (
                     sub
                     for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_DATABASES
+                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
                 ),
                 None,
             )[HADOOP_JAR_STEP][ARGS]
@@ -235,7 +235,7 @@ def add_command_line_params(
                 (
                     sub
                     for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_DATABASES
+                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
                 ),
                 None,
             )[HADOOP_JAR_STEP][ARGS] = clive_script_args
