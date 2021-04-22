@@ -120,7 +120,7 @@ class Payload:
 STEPS = "Steps"
 NAME_KEY = "Name"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
-SNS_NOTIFICATION_STEP = "sns-notification"
+SEND_NOTIFICATION_STEP = "send_notification"
 BUILD_DAYMINUS1_STEP = "build-day-1-"
 SNAPSHOT_TYPE_INCRMENTAL = "incremental"
 SNAPSHOT_TYPE_FULL = "full"
@@ -150,22 +150,19 @@ def add_command_line_params(
     try:
         if (
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )
             is not None
         ):
             pdm_script_args = next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )[HADOOP_JAR_STEP][ARGS]
             pdm_script_args.append(CORRELATION_ID)
             pdm_script_args.append(correlation_id)
             pdm_script_args.append(S3_PREFIX)
             pdm_script_args.append(s3_prefix)
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
 
         if (
@@ -359,7 +356,7 @@ def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
     if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
         for step_count, step_dict in enumerate(cluster_config[STEPS]):
             if (
-                step_dict[NAME_KEY] == SNS_NOTIFICATION_STEP
+                step_dict[NAME_KEY] == SEND_NOTIFICATION_STEP
                 or step_dict[NAME_KEY] == CREATE_PDM_TRIGGER_STEP_NAME
             ):
                 del cluster_config[STEPS][step_count]
