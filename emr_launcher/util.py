@@ -127,7 +127,7 @@ SNAPSHOT_TYPE_FULL = "full"
 SOURCE = "source"
 COURTESY_FLUSH_STEP_NAME = "courtesy-flush"
 CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
-SUBMIT_JOB = "submit-job"
+SUBMIT_JOB = "submit_job"
 CREATE_CLIVE_DATABASES = "create-clive-databases"
 HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
@@ -150,22 +150,19 @@ def add_command_line_params(
     try:
         if (
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )
             is not None
         ):
             pdm_script_args = next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )[HADOOP_JAR_STEP][ARGS]
             pdm_script_args.append(CORRELATION_ID)
             pdm_script_args.append(correlation_id)
             pdm_script_args.append(S3_PREFIX)
             pdm_script_args.append(s3_prefix)
             next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
+                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE), None,
             )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
 
         if (
