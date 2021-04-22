@@ -128,6 +128,7 @@ SOURCE = "source"
 COURTESY_FLUSH_STEP_NAME = "courtesy-flush"
 CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
 SUBMIT_JOB = "submit-job"
+CREATE_CLIVE_DATABASES = "create-clive-databases"
 HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
 CORRELATION_ID = "--correlation_id"
@@ -202,6 +203,43 @@ def add_command_line_params(
                 ),
                 None,
             )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
+    except Exception as e:
+        logger.error(e)
+
+    try:
+        if (
+            next(
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
+                ),
+                None,
+            )
+            is not None
+        ):
+            clive_script_args = next(
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
+                ),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            clive_script_args.append(CORRELATION_ID)
+            clive_script_args.append(correlation_id)
+            clive_script_args.append(S3_PREFIX)
+            clive_script_args.append(s3_prefix)
+            print(clive_script_args)
+            next(
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
+                ),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = clive_script_args
+
     except Exception as e:
         logger.error(e)
 
