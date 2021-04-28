@@ -20,7 +20,7 @@ SUBMIT_JOB = "submit-job"
 
 NAME_KEY = "Name"
 
-SNS_NOTIFICATION_STEP = "sns-notification"
+SNS_NOTIFICATION_STEP = "send_notification"
 
 CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
 
