@@ -230,6 +230,10 @@ def add_command_line_params(
             clive_script_args.append(correlation_id)
             clive_script_args.append(S3_PREFIX)
             clive_script_args.append(s3_prefix)
+            clive_script_args.append(SNAPSHOT_TYPE)
+            clive_script_args.append(snapshot_type)
+            clive_script_args.append(EXPORT_DATE_COMMAND)
+            clive_script_args.append(export_date)
             print(clive_script_args)
             next(
                 (
