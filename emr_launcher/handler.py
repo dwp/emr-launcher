@@ -213,7 +213,12 @@ def old_handler(event=None) -> dict:
 
     if correlation_id_necessary:
         add_command_line_params(
-            cluster_config, correlation_id, s3_prefix, snapshot_type, export_date, skip_pdm_trigger
+            cluster_config,
+            correlation_id,
+            s3_prefix,
+            snapshot_type,
+            export_date,
+            skip_pdm_trigger,
         )
         adg_trim_steps_for_incremental(cluster_config, snapshot_type)
         adg_trim_steps_for_full(cluster_config, snapshot_type)

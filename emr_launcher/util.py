@@ -140,7 +140,12 @@ SKIP_PDM_TRIGGER_COMMAND = "--skip_pdm_trigger"
 
 @deprecated
 def add_command_line_params(
-    cluster_config, correlation_id, s3_prefix, snapshot_type, export_date, skip_pdm_trigger
+    cluster_config,
+    correlation_id,
+    s3_prefix,
+    snapshot_type,
+    export_date,
+    skip_pdm_trigger,
 ):
     """
     Adding command line arguments to ADG and PDM EMR steps scripts. First if block in Try is for PDM and the second one
