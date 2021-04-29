@@ -23,6 +23,7 @@ PAYLOAD_S3_PREFIX = "s3_prefix"
 PAYLOAD_CORRELATION_ID = "correlation_id"
 PAYLOAD_SNAPSHOT_TYPE = "snapshot_type"
 PAYLOAD_EXPORT_DATE = "export_date"
+PAYLOAD_SKIP_PDM_TRIGGER = "skip_pdm_trigger"
 ADG_NAME = "analytical-dataset-generator"
 SNAPSHOT_TYPE_FULL = "full"
 SNAPSHOT_TYPE_INCREMENTAL = "incremental"
@@ -124,6 +125,7 @@ def old_handler(event=None) -> dict:
     s3_prefix = get_value(PAYLOAD_S3_PREFIX, event)
     snapshot_type = get_value(PAYLOAD_SNAPSHOT_TYPE, event)
     export_date = get_value(PAYLOAD_EXPORT_DATE, event)
+    skip_pdm_trigger = get_value(PAYLOAD_SKIP_PDM_TRIGGER, event)
 
     if "Records" in event or (
         PAYLOAD_CORRELATION_ID in event and PAYLOAD_S3_PREFIX in event
@@ -211,7 +213,12 @@ def old_handler(event=None) -> dict:
 
     if correlation_id_necessary:
         add_command_line_params(
-            cluster_config, correlation_id, s3_prefix, snapshot_type, export_date
+            cluster_config,
+            correlation_id,
+            s3_prefix,
+            snapshot_type,
+            export_date,
+            skip_pdm_trigger,
         )
         adg_trim_steps_for_incremental(cluster_config, snapshot_type)
         adg_trim_steps_for_full(cluster_config, snapshot_type)
