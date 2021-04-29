@@ -135,11 +135,12 @@ CORRELATION_ID = "--correlation_id"
 S3_PREFIX = "--s3_prefix"
 SNAPSHOT_TYPE = "--snapshot_type"
 EXPORT_DATE_COMMAND = "--export_date"
+SKIP_PDM_TRIGGER_COMMAND = "--skip_pdm_trigger"
 
 
 @deprecated
 def add_command_line_params(
-    cluster_config, correlation_id, s3_prefix, snapshot_type, export_date
+    cluster_config, correlation_id, s3_prefix, snapshot_type, export_date, skip_pdm_trigger
 ):
     """
     Adding command line arguments to ADG and PDM EMR steps scripts. First if block in Try is for PDM and the second one
@@ -345,6 +346,11 @@ def add_command_line_params(
             adg_script_args.append(snapshot_type)
             adg_script_args.append(EXPORT_DATE_COMMAND)
             adg_script_args.append(export_date)
+
+            if skip_pdm_trigger != "NOT_SET":
+                adg_script_args.append(SKIP_PDM_TRIGGER_COMMAND)
+                adg_script_args.append(skip_pdm_trigger)
+
             print(adg_script_args)
             next(
                 (
