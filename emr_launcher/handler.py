@@ -136,10 +136,16 @@ def old_handler(event=None) -> dict:
     cluster_name = cluster_config["Name"]
 
     # if ADG and if snapshot_type is incremental use "configurations_incremental"
-    config_yml_name = get_config_file_name(cluster_name, snapshot_type)
+    configurations_config_yml_name = get_config_file_name(
+        cluster_name, snapshot_type, "configurations"
+    )
 
     cluster_config.update(
-        read_config(config_type=config_yml_name, s3_overrides=None, required=False)
+        read_config(
+            config_type=configurations_config_yml_name,
+            s3_overrides=None,
+            required=False,
+        )
     )
 
     try:
@@ -206,7 +212,11 @@ def old_handler(event=None) -> dict:
     except Exception as e:
         logger.info(e)
 
-    cluster_config.update(read_config("instances"))
+    instances_config_yml_name = get_config_file_name(
+        cluster_name, snapshot_type, "instances"
+    )
+    cluster_config.update(read_config(instances_config_yml_name))
+
     cluster_config.update(
         read_config(config_type="steps", s3_overrides=None, required=False)
     )
@@ -245,10 +255,10 @@ def old_handler(event=None) -> dict:
     return resp
 
 
-def get_config_file_name(cluster_name, snapshot_type):
+def get_config_file_name(cluster_name, snapshot_type, config_base):
     if cluster_name == ADG_NAME and snapshot_type == SNAPSHOT_TYPE_INCREMENTAL:
-        return "configurations_incremental"
-    return "configurations"
+        return f"{config_base}_incremental"
+    return config_base
 
 
 def update_adg_cluster_name(cluster_config, snapshot_type):
