@@ -121,9 +121,6 @@ STEPS = "Steps"
 NAME_KEY = "Name"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SEND_NOTIFICATION_STEP = "send_notification"
-BUILD_DAYMINUS1_STEP = "build-day-1-"
-SNAPSHOT_TYPE_INCRMENTAL = "incremental"
-SNAPSHOT_TYPE_FULL = "full"
 SOURCE = "source"
 COURTESY_FLUSH_STEP_NAME = "courtesy-flush"
 CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
@@ -366,27 +363,44 @@ def add_command_line_params(
                 None,
             )[HADOOP_JAR_STEP][ARGS] = adg_script_args
 
+    try:
+        if (
+            next(
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == SEND_NOTIFICATION_STEP
+                ),
+                None,
+            )
+            is not None
+        ):
+            adg_script_args = next(
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == SEND_NOTIFICATION_STEP
+                ),
+                None,
+            )[HADOOP_JAR_STEP][ARGS]
+            adg_script_args.append(CORRELATION_ID)
+            adg_script_args.append(correlation_id)
+            adg_script_args.append(S3_PREFIX)
+            adg_script_args.append(s3_prefix)
+            adg_script_args.append(SNAPSHOT_TYPE)
+            adg_script_args.append(snapshot_type)
+            adg_script_args.append(EXPORT_DATE_COMMAND)
+            adg_script_args.append(export_date)
+
+            print(adg_script_args)
+            next(
+                (
+                    sub
+                    for sub in cluster_config[STEPS]
+                    if sub[NAME_KEY] == SEND_NOTIFICATION_STEP
+                ),
+                None,
+            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
+
     except Exception as e:
         logger.error(e)
-
-
-def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
-    if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
-        for step_count, step_dict in enumerate(cluster_config[STEPS]):
-            if (
-                step_dict[NAME_KEY] == SEND_NOTIFICATION_STEP
-                or step_dict[NAME_KEY] == CREATE_PDM_TRIGGER_STEP_NAME
-            ):
-                del cluster_config[STEPS][step_count]
-
-
-def adg_trim_steps_for_full(cluster_config, snapshot_type):
-    delete_list = []
-    if snapshot_type != SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
-        steps = cluster_config[STEPS]
-        for step_count in range(0, len(steps)):
-            if steps[step_count][NAME_KEY].find(BUILD_DAYMINUS1_STEP) != -1:
-                dicts_to_delete = cluster_config[STEPS][step_count]
-                delete_list.append(dicts_to_delete)
-    for i in range(len(delete_list)):
-        cluster_config[STEPS].remove(delete_list[i])

@@ -15,8 +15,6 @@ from emr_launcher.util import (
     get_payload,
     Payload,
     add_command_line_params,
-    adg_trim_steps_for_incremental,
-    adg_trim_steps_for_full,
 )
 
 PAYLOAD_S3_PREFIX = "s3_prefix"
@@ -230,8 +228,6 @@ def old_handler(event=None) -> dict:
             export_date,
             skip_pdm_trigger,
         )
-        adg_trim_steps_for_incremental(cluster_config, snapshot_type)
-        adg_trim_steps_for_full(cluster_config, snapshot_type)
 
     # Renaming ADG cluster based on snapshot type full/incremental
     if cluster_name == ADG_NAME:
