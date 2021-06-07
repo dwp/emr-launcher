@@ -188,6 +188,7 @@ def add_command_line_args_to_step(
     s3_prefix,
     snapshot_type,
     export_date,
+    step_name,
     skip_pdm_trigger="NOT_SET",
 ):
     """
