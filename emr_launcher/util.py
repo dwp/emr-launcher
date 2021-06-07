@@ -177,7 +177,7 @@ def add_command_line_params(
             CREATE_PDM_TRIGGER_STEP_NAME,
             skip_pdm_trigger,
         )
-    except Exception ex:
+    except Exception as ex:
         logger.error(ex)
         raise ex
 
