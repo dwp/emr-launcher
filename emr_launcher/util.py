@@ -149,34 +149,37 @@ def add_command_line_params(
     is for ADG.
     """
     logger = configure_log()
-    print(correlation_id, "\n", s3_prefix)
 
-    for step_name in [
-        SEND_NOTIFICATION_STEP,
-        COURTESY_FLUSH_STEP_NAME,
-        SUBMIT_JOB,
-        CREATE_CLIVE_DATABASES,
-        CREATE_HIVE_DYNAMO_TABLE,
-        SOURCE,
-    ]:
+    try:
+        for step_name in [
+            SEND_NOTIFICATION_STEP,
+            COURTESY_FLUSH_STEP_NAME,
+            SUBMIT_JOB,
+            CREATE_CLIVE_DATABASES,
+            CREATE_HIVE_DYNAMO_TABLE,
+            SOURCE,
+        ]:
+            add_command_line_args_to_step(
+                cluster_config,
+                correlation_id,
+                s3_prefix,
+                snapshot_type,
+                export_date,
+                step_name,
+            )
+
         add_command_line_args_to_step(
             cluster_config,
             correlation_id,
             s3_prefix,
             snapshot_type,
             export_date,
-            step_name,
+            CREATE_PDM_TRIGGER_STEP_NAME,
+            skip_pdm_trigger,
         )
-
-    add_command_line_args_to_step(
-        cluster_config,
-        correlation_id,
-        s3_prefix,
-        snapshot_type,
-        export_date,
-        CREATE_PDM_TRIGGER_STEP_NAME,
-        skip_pdm_trigger,
-    )
+    except Exception ex:
+        logger.error(ex)
+        raise ex
 
 def add_command_line_args_to_step(
     cluster_config,
@@ -221,7 +224,6 @@ def add_command_line_args_to_step(
             script_args.append(SKIP_PDM_TRIGGER_COMMAND)
             script_args.append(skip_pdm_trigger)
 
-        print(script_args)
         next(
             (
                 sub
