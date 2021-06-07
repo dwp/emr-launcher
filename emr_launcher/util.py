@@ -181,34 +181,27 @@ def add_command_line_params(
         logger.error(ex)
         raise ex
 
+
 def add_command_line_args_to_step(
     cluster_config,
     correlation_id,
     s3_prefix,
     snapshot_type,
     export_date,
-    skip_pdm_trigger="NOT_SET"
+    skip_pdm_trigger="NOT_SET",
 ):
     """
     Adding command line arguments to an individual step.
     """
     if (
         next(
-            (
-                sub
-                for sub in cluster_config[STEPS]
-                if sub[NAME_KEY] == step_name
-            ),
+            (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == step_name),
             None,
         )
         is not None
     ):
         script_args = next(
-            (
-                sub
-                for sub in cluster_config[STEPS]
-                if sub[NAME_KEY] == step_name
-            ),
+            (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == step_name),
             None,
         )[HADOOP_JAR_STEP][ARGS]
         script_args.append(CORRELATION_ID)
@@ -225,10 +218,6 @@ def add_command_line_args_to_step(
             script_args.append(skip_pdm_trigger)
 
         next(
-            (
-                sub
-                for sub in cluster_config[STEPS]
-                if sub[NAME_KEY] == step_name
-            ),
+            (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == step_name),
             None,
         )[HADOOP_JAR_STEP][ARGS] = script_args
