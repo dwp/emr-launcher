@@ -121,9 +121,6 @@ STEPS = "Steps"
 NAME_KEY = "Name"
 CREATE_HIVE_DYNAMO_TABLE = "create-hive-dynamo-table"
 SEND_NOTIFICATION_STEP = "send_notification"
-BUILD_DAYMINUS1_STEP = "build-day-1-"
-SNAPSHOT_TYPE_INCRMENTAL = "incremental"
-SNAPSHOT_TYPE_FULL = "full"
 SOURCE = "source"
 COURTESY_FLUSH_STEP_NAME = "courtesy-flush"
 CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
@@ -152,241 +149,76 @@ def add_command_line_params(
     is for ADG.
     """
     logger = configure_log()
-    print(correlation_id, "\n", s3_prefix)
-    try:
-        if (
-            next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
-            )
-            is not None
-        ):
-            pdm_script_args = next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
-            )[HADOOP_JAR_STEP][ARGS]
-            pdm_script_args.append(CORRELATION_ID)
-            pdm_script_args.append(correlation_id)
-            pdm_script_args.append(S3_PREFIX)
-            pdm_script_args.append(s3_prefix)
-            next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SOURCE),
-                None,
-            )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
-
-        if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_HIVE_DYNAMO_TABLE
-                ),
-                None,
-            )
-            is not None
-        ):
-            pdm_script_args = next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_HIVE_DYNAMO_TABLE
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS]
-            pdm_script_args.append(CORRELATION_ID)
-            pdm_script_args.append(correlation_id)
-            pdm_script_args.append(S3_PREFIX)
-            pdm_script_args.append(s3_prefix)
-            pdm_script_args.append(SNAPSHOT_TYPE)
-            pdm_script_args.append(snapshot_type)
-            pdm_script_args.append(EXPORT_DATE_COMMAND)
-            pdm_script_args.append(export_date)
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_HIVE_DYNAMO_TABLE
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS] = pdm_script_args
-    except Exception as e:
-        logger.error(e)
 
     try:
-        if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
-                ),
-                None,
+        for step_name in [
+            SEND_NOTIFICATION_STEP,
+            COURTESY_FLUSH_STEP_NAME,
+            SUBMIT_JOB,
+            CREATE_CLIVE_DATABASES,
+            CREATE_HIVE_DYNAMO_TABLE,
+            SOURCE,
+        ]:
+            add_command_line_args_to_step(
+                cluster_config,
+                correlation_id,
+                s3_prefix,
+                snapshot_type,
+                export_date,
+                step_name,
             )
-            is not None
-        ):
-            clive_script_args = next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS]
-            clive_script_args.append(CORRELATION_ID)
-            clive_script_args.append(correlation_id)
-            clive_script_args.append(S3_PREFIX)
-            clive_script_args.append(s3_prefix)
-            clive_script_args.append(SNAPSHOT_TYPE)
-            clive_script_args.append(snapshot_type)
-            clive_script_args.append(EXPORT_DATE_COMMAND)
-            clive_script_args.append(export_date)
-            print(clive_script_args)
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_CLIVE_DATABASES
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS] = clive_script_args
 
-    except Exception as e:
-        logger.error(e)
-
-    try:
-        if (
-            next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
-                None,
-            )
-            is not None
-        ):
-            adg_script_args = next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
-                None,
-            )[HADOOP_JAR_STEP][ARGS]
-            adg_script_args.append(CORRELATION_ID)
-            adg_script_args.append(correlation_id)
-            adg_script_args.append(S3_PREFIX)
-            adg_script_args.append(s3_prefix)
-            adg_script_args.append(SNAPSHOT_TYPE)
-            adg_script_args.append(snapshot_type)
-            adg_script_args.append(EXPORT_DATE_COMMAND)
-            adg_script_args.append(export_date)
-            print(adg_script_args)
-            next(
-                (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == SUBMIT_JOB),
-                None,
-            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
-
-    except Exception as e:
-        logger.error(e)
-
-    try:
-        if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME
-                ),
-                None,
-            )
-            is not None
-        ):
-            adg_script_args = next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS]
-            adg_script_args.append(CORRELATION_ID)
-            adg_script_args.append(correlation_id)
-            adg_script_args.append(S3_PREFIX)
-            adg_script_args.append(s3_prefix)
-            adg_script_args.append(SNAPSHOT_TYPE)
-            adg_script_args.append(snapshot_type)
-            adg_script_args.append(EXPORT_DATE_COMMAND)
-            adg_script_args.append(export_date)
-            print(adg_script_args)
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == COURTESY_FLUSH_STEP_NAME
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
-
-    except Exception as e:
-        logger.error(e)
-
-    try:
-        if (
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_PDM_TRIGGER_STEP_NAME
-                ),
-                None,
-            )
-            is not None
-        ):
-            adg_script_args = next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_PDM_TRIGGER_STEP_NAME
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS]
-            adg_script_args.append(CORRELATION_ID)
-            adg_script_args.append(correlation_id)
-            adg_script_args.append(S3_PREFIX)
-            adg_script_args.append(s3_prefix)
-            adg_script_args.append(SNAPSHOT_TYPE)
-            adg_script_args.append(snapshot_type)
-            adg_script_args.append(EXPORT_DATE_COMMAND)
-            adg_script_args.append(export_date)
-
-            if skip_pdm_trigger != "NOT_SET":
-                adg_script_args.append(SKIP_PDM_TRIGGER_COMMAND)
-                adg_script_args.append(skip_pdm_trigger)
-
-            print(adg_script_args)
-            next(
-                (
-                    sub
-                    for sub in cluster_config[STEPS]
-                    if sub[NAME_KEY] == CREATE_PDM_TRIGGER_STEP_NAME
-                ),
-                None,
-            )[HADOOP_JAR_STEP][ARGS] = adg_script_args
-
-    except Exception as e:
-        logger.error(e)
+        add_command_line_args_to_step(
+            cluster_config,
+            correlation_id,
+            s3_prefix,
+            snapshot_type,
+            export_date,
+            CREATE_PDM_TRIGGER_STEP_NAME,
+            skip_pdm_trigger,
+        )
+    except Exception as ex:
+        logger.error(ex)
+        raise ex
 
 
-def adg_trim_steps_for_incremental(cluster_config, snapshot_type):
-    if snapshot_type == SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
-        for step_count, step_dict in enumerate(cluster_config[STEPS]):
-            if (
-                step_dict[NAME_KEY] == SEND_NOTIFICATION_STEP
-                or step_dict[NAME_KEY] == CREATE_PDM_TRIGGER_STEP_NAME
-            ):
-                del cluster_config[STEPS][step_count]
+def add_command_line_args_to_step(
+    cluster_config,
+    correlation_id,
+    s3_prefix,
+    snapshot_type,
+    export_date,
+    step_name,
+    skip_pdm_trigger="NOT_SET",
+):
+    """
+    Adding command line arguments to an individual step.
+    """
+    if (
+        next(
+            (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == step_name),
+            None,
+        )
+        is not None
+    ):
+        script_args = next(
+            (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == step_name),
+            None,
+        )[HADOOP_JAR_STEP][ARGS]
+        script_args.append(CORRELATION_ID)
+        script_args.append(correlation_id)
+        script_args.append(S3_PREFIX)
+        script_args.append(s3_prefix)
+        script_args.append(SNAPSHOT_TYPE)
+        script_args.append(snapshot_type)
+        script_args.append(EXPORT_DATE_COMMAND)
+        script_args.append(export_date)
 
+        if skip_pdm_trigger != "NOT_SET":
+            script_args.append(SKIP_PDM_TRIGGER_COMMAND)
+            script_args.append(skip_pdm_trigger)
 
-def adg_trim_steps_for_full(cluster_config, snapshot_type):
-    delete_list = []
-    if snapshot_type != SNAPSHOT_TYPE_INCRMENTAL and STEPS in cluster_config:
-        steps = cluster_config[STEPS]
-        for step_count in range(0, len(steps)):
-            if steps[step_count][NAME_KEY].find(BUILD_DAYMINUS1_STEP) != -1:
-                dicts_to_delete = cluster_config[STEPS][step_count]
-                delete_list.append(dicts_to_delete)
-    for i in range(len(delete_list)):
-        cluster_config[STEPS].remove(delete_list[i])
+        next(
+            (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == step_name),
+            None,
+        )[HADOOP_JAR_STEP][ARGS] = script_args
