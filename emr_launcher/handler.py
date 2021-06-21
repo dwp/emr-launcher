@@ -132,11 +132,7 @@ def old_handler(event=None) -> dict:
 
     cluster_config = read_config("cluster")
     cluster_name = cluster_config["Name"]
-
-    # if ADG and if snapshot_type is incremental use "configurations_incremental"
-    configurations_config_yml_name = get_config_file_name(
-        cluster_name, snapshot_type, "configurations"
-    )
+    configurations_config_yml_name = "configurations"
 
     cluster_config.update(
         read_config(
@@ -210,9 +206,7 @@ def old_handler(event=None) -> dict:
     except Exception as e:
         logger.info(e)
 
-    instances_config_yml_name = get_config_file_name(
-        cluster_name, snapshot_type, "instances"
-    )
+    instances_config_yml_name = "instances"
     cluster_config.update(read_config(instances_config_yml_name))
 
     cluster_config.update(
@@ -249,12 +243,6 @@ def old_handler(event=None) -> dict:
     emr_cluster_add_tags(job_flow_id, additional_tags)
 
     return resp
-
-
-def get_config_file_name(cluster_name, snapshot_type, config_base):
-    if cluster_name == ADG_NAME and snapshot_type == SNAPSHOT_TYPE_INCREMENTAL:
-        return f"{config_base}_incremental"
-    return config_base
 
 
 def update_adg_cluster_name(cluster_config, snapshot_type):
