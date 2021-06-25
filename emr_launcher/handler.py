@@ -206,7 +206,7 @@ def old_handler(event=None) -> dict:
     except Exception as e:
         logger.info(e)
 
-    instances_config_yml_name = "instances"
+    instances_config_yml_name = get_configuration_name("instances", snapshot_type)
     cluster_config.update(read_config(instances_config_yml_name))
 
     cluster_config.update(
@@ -250,4 +250,12 @@ def update_adg_cluster_name(cluster_config, snapshot_type):
         f"{ADG_NAME}-{SNAPSHOT_TYPE_INCREMENTAL}"
         if snapshot_type == SNAPSHOT_TYPE_INCREMENTAL
         else f"{ADG_NAME}-{SNAPSHOT_TYPE_FULL}"
+    )
+
+
+def get_configuration_name(base_name, snapshot_type):
+    return (
+        f"{base_name}_{SNAPSHOT_TYPE_INCREMENTAL}"
+        if snapshot_type == SNAPSHOT_TYPE_INCREMENTAL
+        else base_name
     )
