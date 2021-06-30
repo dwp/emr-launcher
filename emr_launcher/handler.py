@@ -97,13 +97,13 @@ def handler(event=None, context=None) -> dict:
         payload.extend,
         payload.additional_step_args,
     )
-    
-    if (payload.copy_secconfig) :
-        secconfig_orig = cluster_config.get('SecurityConfiguration', "")
-        if (secconfig_orig != "") :
+
+    if payload.copy_secconfig:
+        secconfig_orig = cluster_config.get("SecurityConfiguration", "")
+        if secconfig_orig != "":
             secconfig = dup_security_configuration(secconfig_orig)
-            cluster_config['SecurityConfiguration'] = secconfig
-           
+            cluster_config["SecurityConfiguration"] = secconfig
+
     return emr_launch_cluster(cluster_config)
 
 
