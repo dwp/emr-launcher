@@ -4,6 +4,7 @@ import ast
 import boto3
 
 from emr_launcher.logger import configure_log
+from datetime import datetime
 
 logger = configure_log()
 
@@ -58,3 +59,17 @@ def emr_cluster_add_tags(job_flow_id, tags, emr_client=None):
         )
         logger.debug(response)
     logger.info("Successfully added additional tags")
+
+def dup_security_configuration(source_config, emr_client=None):
+    if emr_client is None:
+        emr_client = _get_client(service_name="emr")
+
+    logger.info("Duplicating security configuration " + source_config)
+    json_config = emr_client.describe_security_configuration(Name=source_config)
+
+    new_config = source_config + datetime.now().strftime("_%Y%m%d%H%M%S")
+    emr_client.create_security_configuration(Name=new_config, SecurityConfiguration=json_config['SecurityConfiguration'])
+
+    logger.info("Duplicating security configuration successful")
+    return new_config
+  

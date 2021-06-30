@@ -7,6 +7,7 @@ from emr_launcher.aws import (
     sm_retrieve_secrets,
     emr_launch_cluster,
     emr_cluster_add_tags,
+    dup_security_configuration,
 )
 from emr_launcher.logger import configure_log
 from emr_launcher.util import (
@@ -96,6 +97,13 @@ def handler(event=None, context=None) -> dict:
         payload.extend,
         payload.additional_step_args,
     )
+    
+    if (payload.copy_secconfig) :
+        secconfig_orig = cluster_config.get('SecurityConfiguration', "")
+        if (secconfig_orig != "") :
+            secconfig = dup_security_configuration(secconfig_orig)
+            cluster_config['SecurityConfiguration'] = secconfig
+           
     return emr_launch_cluster(cluster_config)
 
 

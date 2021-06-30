@@ -115,6 +115,7 @@ class Payload:
     overrides: dict = None
     extend: dict = None
     additional_step_args: dict = None
+    copy_secconfig: bool = False
 
 
 STEPS = "Steps"
