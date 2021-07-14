@@ -127,6 +127,7 @@ COURTESY_FLUSH_STEP_NAME = "courtesy-flush"
 CREATE_PDM_TRIGGER_STEP_NAME = "create_pdm_trigger"
 SUBMIT_JOB = "submit-job"
 CREATE_CLIVE_DATABASES = "create-clive-databases"
+CREATE_UC_FEATURE_DATABASES = "create_uc_feature_dbs"
 HADOOP_JAR_STEP = "HadoopJarStep"
 ARGS = "Args"
 CORRELATION_ID = "--correlation_id"
@@ -157,6 +158,7 @@ def add_command_line_params(
             COURTESY_FLUSH_STEP_NAME,
             SUBMIT_JOB,
             CREATE_CLIVE_DATABASES,
+            CREATE_UC_FEATURE_DATABASES,
             CREATE_HIVE_DYNAMO_TABLE,
             SOURCE,
         ]:
