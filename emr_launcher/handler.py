@@ -98,8 +98,13 @@ def handler(event=None, context=None) -> dict:
     if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
         return old_handler(event)
 
-    if PAYLOAD_EVENT_NOTIFICATION_RECORDS in payload and PAYLOAD_S3 in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]:
-        return s3_event_notification_handler(payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0])
+    if (
+        PAYLOAD_EVENT_NOTIFICATION_RECORDS in payload
+        and PAYLOAD_S3 in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+    ):
+        return s3_event_notification_handler(
+            payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+        )
 
     try:
         payload = Payload(**payload)
