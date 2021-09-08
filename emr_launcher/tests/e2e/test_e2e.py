@@ -5,7 +5,7 @@ import yaml
 from unittest.mock import patch, MagicMock, call
 from unittest import mock
 
-from emr_launcher.handler import handler
+from emr_launcher.handler import handler, get_event_time_as_date_string
 from emr_launcher.ClusterConfig import ClusterConfig
 
 EMR_LAUNCHER_CONFIG_DIR = os.path.dirname(__file__)
@@ -60,8 +60,8 @@ class TestE2E:
     def init_tests(self):
         os.environ["EMR_LAUNCHER_CONFIG_DIR"] = EMR_LAUNCHER_CONFIG_DIR
 
-    @patch("emr_launcher.aws.sm_retrieve_secrets")
-    @patch("emr_launcher.aws.emr_launch_cluster")
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
     def test_launches_correct_cluster(
         self, mock_launch_cluster: MagicMock, mock_retrieve_secrets: MagicMock
     ):
@@ -74,8 +74,8 @@ class TestE2E:
         mock_launch_cluster.assert_called_once()
         assert call(expected) == mock_launch_cluster.call_args_list[0]
 
-    @patch("emr_launcher.aws.sm_retrieve_secrets")
-    @patch("emr_launcher.aws.emr_launch_cluster")
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
     def test_launches_correct_cluster_with_overrides(
         self, mock_launch_cluster: MagicMock, mock_retrieve_secrets: MagicMock
     ):
@@ -97,8 +97,8 @@ class TestE2E:
         mock_launch_cluster.assert_called_once()
         assert call(expected) == mock_launch_cluster.call_args_list[0]
 
-    @patch("emr_launcher.aws.sm_retrieve_secrets")
-    @patch("emr_launcher.aws.emr_launch_cluster")
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
     def test_launches_correct_cluster_with_extend(
         self, mock_launch_cluster: MagicMock, mock_retrieve_secrets: MagicMock
     ):
@@ -116,9 +116,9 @@ class TestE2E:
         mock_launch_cluster.assert_called_once()
         assert call(expected) == mock_launch_cluster.call_args_list[0]
 
-    @patch("emr_launcher.aws.sm_retrieve_secrets")
-    @patch("emr_launcher.aws.emr_launch_cluster")
-    @patch("emr_launcher.aws.emr_cluster_add_tags")
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
+    @patch("emr_launcher.handler.emr_cluster_add_tags")
     def test_handlers_same_result(
         self,
         mock_tag_cluster: MagicMock,
@@ -156,8 +156,8 @@ class TestE2E:
 
         assert old_handler_call == new_handler_call
 
-    @patch("emr_launcher.aws.sm_retrieve_secrets")
-    @patch("emr_launcher.aws.emr_launch_cluster")
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
     @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
     def test_uses_overrides_s3_location(
         self,
@@ -185,8 +185,8 @@ class TestE2E:
         mock_launch_cluster.assert_called_once()
         mock_from_s3.assert_has_calls(calls, any_order=True)
 
-    @patch("emr_launcher.aws.sm_retrieve_secrets")
-    @patch("emr_launcher.aws.emr_launch_cluster")
+    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.handler.emr_launch_cluster")
     @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
     def test_uses_default_s3_location(
         self,
@@ -215,6 +215,6 @@ class TestE2E:
         self,
     ):
         expected = "1970-02-01"
-        actual = handler.get_event_time_as_date_string("1970-02-01T03:04:55.666Z")
+        actual = get_event_time_as_date_string("1970-02-01T03:04:55.666Z")
         assert expected == actual
 
