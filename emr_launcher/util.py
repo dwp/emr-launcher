@@ -289,5 +289,5 @@ def add_secret_information_to_cluster_configuration(
             ),
             None,
         )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-    
+
     return cluster_config

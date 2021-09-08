@@ -217,4 +217,3 @@ class TestE2E:
         expected = "1970-02-01"
         actual = get_event_time_as_date_string("1970-02-01T03:04:55.666Z")
         assert expected == actual
-
