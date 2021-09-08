@@ -93,7 +93,6 @@ def build_config(
 
 def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
-    logger.info(payload)
 
     if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
         return old_handler(event)
@@ -142,6 +141,7 @@ def get_value(key, event):
 def s3_event_notification_handler(record=None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
+    logger.info(payload)
 
     export_date = get_event_time_as_date_string(get_value(PAYLOAD_EVENT_TIME, record))
     s3_object = get_value(PAYLOAD_S3, record)
