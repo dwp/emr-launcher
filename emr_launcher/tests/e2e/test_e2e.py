@@ -5,7 +5,7 @@ import yaml
 from unittest.mock import patch, MagicMock, call
 from unittest import mock
 
-from emr_launcher.handler import handler
+from emr_launcher.handler import handler, get_event_time_as_date_string
 from emr_launcher.ClusterConfig import ClusterConfig
 
 EMR_LAUNCHER_CONFIG_DIR = os.path.dirname(__file__)
@@ -163,7 +163,7 @@ class TestE2E:
         self,
         mock_from_s3: MagicMock,
         mock_launch_cluster: MagicMock,
-        mock_retrieve_secrets: MagicMock,
+        mock_retrieve_secrets_handler: MagicMock,
     ):
         if "EMR_LAUNCHER_CONFIG_DIR" in os.environ:
             del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
@@ -174,7 +174,7 @@ class TestE2E:
             call(bucket="Test_S3_Bucket", key=f"Test_S3_Folder/instances.yaml"),
             call(bucket="Test_S3_Bucket", key=f"Test_S3_Folder/steps.yaml"),
         ]
-        mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
+        mock_retrieve_secrets_handler.side_effect = mock_retrieve_secrets_side_effect
 
         s3_overrides = {
             "emr_launcher_config_s3_bucket": "Test_S3_Bucket",
@@ -210,3 +210,10 @@ class TestE2E:
         handler()
         mock_launch_cluster.assert_called_once()
         mock_from_s3.assert_has_calls(calls, any_order=True)
+
+    def test_get_event_time_as_date_string(
+        self,
+    ):
+        expected = "1970-02-01"
+        actual = get_event_time_as_date_string("1970-02-01T03:04:55.666Z")
+        assert expected == actual

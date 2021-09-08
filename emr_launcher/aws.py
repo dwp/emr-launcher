@@ -14,20 +14,6 @@ def _get_client(service_name: str):
     return session.client(service_name=service_name)
 
 
-def sm_retrieve_secrets(secret_name, sm_client=None):
-    try:
-        if sm_client is None:
-            sm_client = _get_client(service_name="secretsmanager")
-        response = sm_client.get_secret_value(SecretId=secret_name)
-        response_string = response["SecretString"]
-        response_dict = ast.literal_eval(response_string)
-        secret_value = response_dict["password"]
-
-        return secret_value
-    except Exception:
-        logging.info(secret_name + " Secret not found in secretsmanager")
-
-
 def s3_get_object_body(bucket, key, s3_client=None):
     if s3_client is None:
         s3_client = _get_client(service_name="s3")
