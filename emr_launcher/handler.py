@@ -193,7 +193,7 @@ def s3_event_notification_handler(record=None) -> dict:
 
 
 def get_event_time_as_date_string(event_time):
-    event_time_object = datetime.strptime(event_time, "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    event_time_object = datetime.strptime(event_time, "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     return event_time_object.strftime("yyyy-MM-dd")
 
 

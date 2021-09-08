@@ -156,7 +156,7 @@ class TestE2E:
 
         assert old_handler_call == new_handler_call
 
-    @patch("emr_launcher.handler.sm_retrieve_secrets")
+    @patch("emr_launcher.aws.sm_retrieve_secrets")
     @patch("emr_launcher.handler.emr_launch_cluster")
     @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
     def test_uses_overrides_s3_location(
