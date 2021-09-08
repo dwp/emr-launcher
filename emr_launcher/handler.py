@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from emr_launcher.ClusterConfig import ClusterConfig
 from emr_launcher.aws import (
+    sm_retrieve_secrets,
     emr_launch_cluster,
     emr_cluster_add_tags,
     dup_security_configuration,
@@ -92,6 +93,7 @@ def build_config(
 
 def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
+    logger.info(payload)
 
     if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
         return old_handler(event)
@@ -160,9 +162,68 @@ def s3_event_notification_handler(record=None) -> dict:
     )
 
     try:
-        cluster_config = add_secret_information_to_cluster_configuration(cluster_config)
+        if (
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )
+            is not None
+        ):
+            secret_name = next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"]
+            secret_value = sm_retrieve_secrets(secret_name)
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
     except Exception as e:
-        logger.error(e)
+        logger.info(e)
+
+    try:
+        if (
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )
+            is not None
+        ):
+            secret_name = next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"]
+            secret_value = sm_retrieve_secrets(secret_name)
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
+    except Exception as e:
+        logger.info(e)
 
     cluster_config.update(read_config("instances"))
     cluster_config.update(
@@ -227,9 +288,68 @@ def old_handler(event=None) -> dict:
     )
 
     try:
-        cluster_config = add_secret_information_to_cluster_configuration(cluster_config)
+        if (
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )
+            is not None
+        ):
+            secret_name = next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"]
+            secret_value = sm_retrieve_secrets(secret_name)
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "spark-hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
     except Exception as e:
-        logger.error(e)
+        logger.info(e)
+
+    try:
+        if (
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )
+            is not None
+        ):
+            secret_name = next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"]
+            secret_value = sm_retrieve_secrets(secret_name)
+            next(
+                (
+                    sub
+                    for sub in cluster_config["Configurations"]
+                    if sub["Classification"] == "hive-site"
+                ),
+                None,
+            )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
+    except Exception as e:
+        logger.info(e)
 
     instances_config_yml_name = get_configuration_name("instances", snapshot_type)
     cluster_config.update(read_config(instances_config_yml_name))
@@ -284,82 +404,3 @@ def get_configuration_name(base_name, snapshot_type):
         if snapshot_type == SNAPSHOT_TYPE_INCREMENTAL
         else base_name
     )
-
-
-def add_secret_information_to_cluster_configuration(
-    config,
-):
-    cluster_config = config
-    if (
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "spark-hive-site"
-            ),
-            None,
-        )
-        is not None
-    ):
-        secret_name = next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "spark-hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"]
-        secret_value = sm_retrieve_secrets(secret_name)
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "spark-hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-
-    if (
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "hive-site"
-            ),
-            None,
-        )
-        is not None
-    ):
-        secret_name = next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"]
-        secret_value = sm_retrieve_secrets(secret_name)
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-
-    return cluster_config
-
-
-def sm_retrieve_secrets(secret_name, sm_client=None):
-    try:
-        if sm_client is None:
-            sm_client = _get_client(service_name="secretsmanager")
-        response = sm_client.get_secret_value(SecretId=secret_name)
-        response_string = response["SecretString"]
-        response_dict = ast.literal_eval(response_string)
-        secret_value = response_dict["password"]
-
-        return secret_value
-    except Exception:
-        logging.info(secret_name + " Secret not found in secretsmanager")
