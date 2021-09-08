@@ -9,7 +9,6 @@ from dataclasses import dataclass
 
 from emr_launcher.logger import configure_log
 from emr_launcher.ClusterConfig import ClusterConfig, ConfigNotFoundError
-from emr_launcher.aws import sm_retrieve_secrets
 
 NAME_KEY = "Name"
 
@@ -226,68 +225,3 @@ def add_command_line_args_to_step(
             (sub for sub in cluster_config[STEPS] if sub[NAME_KEY] == step_name),
             None,
         )[HADOOP_JAR_STEP][ARGS] = script_args
-
-
-def add_secret_information_to_cluster_configuration(
-    config,
-):
-    cluster_config = config
-    if (
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "spark-hive-site"
-            ),
-            None,
-        )
-        is not None
-    ):
-        secret_name = next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "spark-hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"]
-        secret_value = sm_retrieve_secrets(secret_name)
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "spark-hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-
-    if (
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "hive-site"
-            ),
-            None,
-        )
-        is not None
-    ):
-        secret_name = next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"]
-        secret_value = sm_retrieve_secrets(secret_name)
-        next(
-            (
-                sub
-                for sub in cluster_config["Configurations"]
-                if sub["Classification"] == "hive-site"
-            ),
-            None,
-        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
-
-    return cluster_config

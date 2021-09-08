@@ -5,7 +5,6 @@ import json
 from datetime import datetime
 from emr_launcher.ClusterConfig import ClusterConfig
 from emr_launcher.aws import (
-    sm_retrieve_secrets,
     emr_launch_cluster,
     emr_cluster_add_tags,
     dup_security_configuration,
@@ -17,7 +16,6 @@ from emr_launcher.util import (
     get_payload,
     Payload,
     add_command_line_params,
-    add_secret_information_to_cluster_configuration,
 )
 
 PAYLOAD_EVENT_TIME = "eventTime"
@@ -193,7 +191,7 @@ def s3_event_notification_handler(record=None) -> dict:
 
 
 def get_event_time_as_date_string(event_time):
-    event_time_object = datetime.strptime(event_time, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    event_time_object = datetime.strptime(event_time)
     return event_time_object.strftime("yyyy-MM-dd")
 
 
@@ -286,3 +284,82 @@ def get_configuration_name(base_name, snapshot_type):
         if snapshot_type == SNAPSHOT_TYPE_INCREMENTAL
         else base_name
     )
+
+
+def add_secret_information_to_cluster_configuration(
+    config,
+):
+    cluster_config = config
+    if (
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )
+        is not None
+    ):
+        secret_name = next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"]
+        secret_value = sm_retrieve_secrets(secret_name)
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "spark-hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
+
+    if (
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )
+        is not None
+    ):
+        secret_name = next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"]
+        secret_value = sm_retrieve_secrets(secret_name)
+        next(
+            (
+                sub
+                for sub in cluster_config["Configurations"]
+                if sub["Classification"] == "hive-site"
+            ),
+            None,
+        )["Properties"]["javax.jdo.option.ConnectionPassword"] = secret_value
+
+    return cluster_config
+
+
+def sm_retrieve_secrets(secret_name, sm_client=None):
+    try:
+        if sm_client is None:
+            sm_client = _get_client(service_name="secretsmanager")
+        response = sm_client.get_secret_value(SecretId=secret_name)
+        response_string = response["SecretString"]
+        response_dict = ast.literal_eval(response_string)
+        secret_value = response_dict["password"]
+
+        return secret_value
+    except Exception:
+        logging.info(secret_name + " Secret not found in secretsmanager")

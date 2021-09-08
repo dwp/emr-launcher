@@ -156,7 +156,6 @@ class TestE2E:
 
         assert old_handler_call == new_handler_call
 
-    @patch("emr_launcher.aws.sm_retrieve_secrets")
     @patch("emr_launcher.handler.sm_retrieve_secrets")
     @patch("emr_launcher.handler.emr_launch_cluster")
     @patch("emr_launcher.ClusterConfig.ClusterConfig.from_s3")
@@ -165,7 +164,6 @@ class TestE2E:
         mock_from_s3: MagicMock,
         mock_launch_cluster: MagicMock,
         mock_retrieve_secrets_handler: MagicMock,
-        mock_retrieve_secrets_aws: MagicMock,
     ):
         if "EMR_LAUNCHER_CONFIG_DIR" in os.environ:
             del os.environ["EMR_LAUNCHER_CONFIG_DIR"]
@@ -177,7 +175,6 @@ class TestE2E:
             call(bucket="Test_S3_Bucket", key=f"Test_S3_Folder/steps.yaml"),
         ]
         mock_retrieve_secrets_handler.side_effect = mock_retrieve_secrets_side_effect
-        mock_retrieve_secrets_aws.side_effect = mock_retrieve_secrets_side_effect
 
         s3_overrides = {
             "emr_launcher_config_s3_bucket": "Test_S3_Bucket",
