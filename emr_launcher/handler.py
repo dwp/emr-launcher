@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import uuid
 
 from datetime import datetime
 from emr_launcher.ClusterConfig import ClusterConfig
@@ -21,7 +22,7 @@ from emr_launcher.util import (
 
 PAYLOAD_EVENT_TIME = "eventTime"
 PAYLOAD_BODY = "body"
-PAYLOAD_S3 = "S3"
+PAYLOAD_S3 = "s3"
 PAYLOAD_OBJECT = "object"
 PAYLOAD_KEY = "key"
 PAYLOAD_BUCKET = "bucket"
@@ -106,17 +107,21 @@ def handler(event=None, context=None) -> dict:
         PAYLOAD_EVENT_NOTIFICATION_RECORDS in payload
         and PAYLOAD_BODY in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
     ):
-        loaded_payload_body = json.loads(
-            payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0][PAYLOAD_BODY]
-        )
+        message = payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+        loaded_payload_body = json.loads(message[PAYLOAD_BODY])
         logger.info(f'Processing payload from SQS", "payload": "{loaded_payload_body}')
         if (
             PAYLOAD_EVENT_NOTIFICATION_RECORDS in loaded_payload_body
             and PAYLOAD_S3 in loaded_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
         ):
             logger.info(f'Using S3 event notification handler", "payload": "{payload}')
+            correlation_id = (
+                message["messageId"] if "messageId" in message else str(uuid.uuid4())
+            )
+            logger.info(f'Correlation id set", "correlation_id": "{correlation_id}')
             return s3_event_notification_handler(
-                loaded_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+                correlation_id,
+                loaded_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0],
             )
 
     try:
@@ -152,7 +157,7 @@ def get_value(key, event):
     return "NOT_SET"
 
 
-def s3_event_notification_handler(record=None) -> dict:
+def s3_event_notification_handler(correlation_id, record=None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
     logger.info(record)
@@ -250,6 +255,8 @@ def s3_event_notification_handler(record=None) -> dict:
     for sub in cluster_config[STEPS]:
         if HADOOP_JAR_STEP in sub:
             script_args = sub[HADOOP_JAR_STEP][ARGS]
+            script_args.append("--correlation_id")
+            script_args.append(correlation_id)
             script_args.append("--s3_bucket_name")
             script_args.append(s3_bucket_name)
             script_args.append("--s3_prefix")
@@ -261,7 +268,13 @@ def s3_event_notification_handler(record=None) -> dict:
     resp = emr_launch_cluster(cluster_config)
     job_flow_id = resp["JobFlowId"]
     logger.debug(resp)
-    emr_cluster_add_tags(job_flow_id, {})
+
+    additional_tags = {
+        "Correlation_Id": correlation_id,
+        "export_date": export_date,
+    }
+
+    emr_cluster_add_tags(job_flow_id, additional_tags)
     return resp
 
 
