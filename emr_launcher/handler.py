@@ -20,6 +20,7 @@ from emr_launcher.util import (
 )
 
 PAYLOAD_EVENT_TIME = "eventTime"
+PAYLOAD_BODY = "body"
 PAYLOAD_S3 = "S3"
 PAYLOAD_OBJECT = "object"
 PAYLOAD_KEY = "key"
@@ -94,16 +95,27 @@ def build_config(
 def handler(event=None, context=None) -> dict:
     payload = get_payload(event)
 
+    logger = configure_log()
+    logger.info(payload)
+
     if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
         return old_handler(event)
 
     if (
         PAYLOAD_EVENT_NOTIFICATION_RECORDS in payload
-        and PAYLOAD_S3 in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+        and PAYLOAD_BODY in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
     ):
-        return s3_event_notification_handler(
-            payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+        dumped_payload_body = json.dumps(
+            payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0][PAYLOAD_BODY]
         )
+        logger.info(dumped_payload_body)
+        if (
+            PAYLOAD_EVENT_NOTIFICATION_RECORDS in dumped_payload_body
+            and PAYLOAD_S3 in dumped_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+        ):
+            return s3_event_notification_handler(
+                dumped_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+            )
 
     try:
         payload = Payload(**payload)
@@ -141,7 +153,7 @@ def get_value(key, event):
 def s3_event_notification_handler(record=None) -> dict:
     """Launches an EMR cluster with the provided configuration."""
     logger = configure_log()
-    logger.info(payload)
+    logger.info(record)
 
     export_date = get_event_time_as_date_string(get_value(PAYLOAD_EVENT_TIME, record))
     s3_object = get_value(PAYLOAD_S3, record)
