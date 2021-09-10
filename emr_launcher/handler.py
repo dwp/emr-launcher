@@ -116,7 +116,7 @@ def handler(event=None, context=None) -> dict:
         ):
             logger.info(f'Using S3 event notification handler", "payload": "{payload}')
             correlation_id = (
-                message["MessageId"] if "MessageId" in message else str(uuid.uuid4())
+                message["messageId"] if "messageId" in message else str(uuid.uuid4())
             )
             logger.info(f'Correlation id set", "correlation_id": "{correlation_id}')
             return s3_event_notification_handler(
