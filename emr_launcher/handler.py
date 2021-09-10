@@ -22,7 +22,7 @@ from emr_launcher.util import (
 
 PAYLOAD_EVENT_TIME = "eventTime"
 PAYLOAD_BODY = "body"
-PAYLOAD_S3 = "S3"
+PAYLOAD_S3 = "s3"
 PAYLOAD_OBJECT = "object"
 PAYLOAD_KEY = "key"
 PAYLOAD_BUCKET = "bucket"
