@@ -108,16 +108,16 @@ def handler(event=None, context=None) -> dict:
         and PAYLOAD_BODY in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
     ):
         message = payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
-        loaded_payload_body = json.loads(
-            message[PAYLOAD_BODY]
-        )
+        loaded_payload_body = json.loads(message[PAYLOAD_BODY])
         logger.info(f'Processing payload from SQS", "payload": "{loaded_payload_body}')
         if (
             PAYLOAD_EVENT_NOTIFICATION_RECORDS in loaded_payload_body
             and PAYLOAD_S3 in loaded_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
         ):
             logger.info(f'Using S3 event notification handler", "payload": "{payload}')
-            correlation_id = message["MessageId"] if "MessageId" in message else str(uuid.uuid4())
+            correlation_id = (
+                message["MessageId"] if "MessageId" in message else str(uuid.uuid4())
+            )
             logger.info(f'Correlation id set", "correlation_id": "{correlation_id}')
             return s3_event_notification_handler(
                 correlation_id,
