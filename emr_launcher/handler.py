@@ -99,22 +99,24 @@ def handler(event=None, context=None) -> dict:
     logger.info(payload)
 
     if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
+        logger.info(f'Using old handler", "payload": "{payload}')
         return old_handler(event)
 
     if (
         PAYLOAD_EVENT_NOTIFICATION_RECORDS in payload
         and PAYLOAD_BODY in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
     ):
-        dumped_payload_body = json.dumps(
+        loaded_payload_body = json.loads(
             payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0][PAYLOAD_BODY]
         )
-        logger.info(dumped_payload_body)
+        logger.info(f'Processing payload from SQS", "payload": "{loaded_payload_body}')
         if (
-            PAYLOAD_EVENT_NOTIFICATION_RECORDS in dumped_payload_body
-            and PAYLOAD_S3 in dumped_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+            PAYLOAD_EVENT_NOTIFICATION_RECORDS in loaded_payload_body
+            and PAYLOAD_S3 in loaded_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
         ):
+            logger.info(f'Using S3 event notification handler", "payload": "{payload}')
             return s3_event_notification_handler(
-                dumped_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
+                loaded_payload_body[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
             )
 
     try:
