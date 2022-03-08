@@ -97,3 +97,19 @@ pipenv install
 
 Remember to run `pipenv shell` to reactivate your virtual environment each time
 you enter a new terminal session!
+
+
+## Examples of emr-launcher deployments
+#### Typical deployments
+ * [dwp/aws-analytical-dataset-generation/emr-launcher.tf](https://github.com/dwp/aws-analytical-dataset-generation/blob/master/emr-launcher.tf)
+ * [dwp/dataworks-aws-mongo-latest/emr-launcher.tf](https://github.com/dwp/dataworks-aws-mongo-latest/blob/master/emr-launcher.tf)
+
+#### PDM - custom EMR Launcher implementation
+* [dwp/aws-pdm-dataset-generation/emr-launcher.tf](https://github.com/dwp/aws-pdm-dataset-generation/blob/master/emr-launcher.tf)
+* [dwp/dataworks-pdm-emr-launcher](https://github.com/dwp/dataworks-pdm-emr-launcher)
+
+## Azkaban
+Azkaban targets the emr-launcher when launching clusters.  There are two azkaban emr job types:
+ * [EMRStep](https://github.com/dwp/dataworks-hardened-images/blob/master/azkaban-executor/azkaban-emr-jobtype/src/main/java/uk/gov/dwp/dataworks/azkaban/jobtype/EMRStep.java) - targets existing clusters, but will launch a new cluster if required using the NEW handler
+ * [EmrLauncherJob](https://github.com/dwp/dataworks-hardened-images/blob/master/azkaban-executor/azkaban-emr-jobtype/src/main/java/uk/gov/dwp/dataworks/azkaban/jobtype/EmrLauncherJob.java) - starts a dedicated cluster each time the job runs, uses the OLD handler
+
