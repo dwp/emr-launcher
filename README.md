@@ -10,7 +10,7 @@ It can also modify the cluster configuration based on the event by supplying `s3
 `extend` or `additional_step_args` in the event body.
 
  * `s3_overrides`
-    * The optional s3 location overrides for the EMR config files, made up of s3 id and s3 folder path to config files.
+    * The optional s3 location overrides the location for EMR to read its config files, made up of s3 id and s3 folder path to config files.
  * `overrides`
     * Additional cluster configuration to be merged with the existing configuration.
     * It must have the same structure as the yaml configuration.
