@@ -127,10 +127,10 @@ class TestE2E:
     ):
 
         mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
-        handler({"correlation_id": "test", "s3_prefix": "test"})
+        with pytest.raises(ValueError):
+            handler({"correlation_id": "test", "s3_prefix": "test"})
 
-        assert mock_launch_cluster.call_count == 1
-        old_handler_call = mock_launch_cluster.call_args_list[0]
+        assert mock_launch_cluster.call_count == 0
 
         handler(
             {
@@ -149,12 +149,7 @@ class TestE2E:
             }
         )
 
-        mock_tag_cluster.assert_called_once()
-
-        assert mock_launch_cluster.call_count == 2
-        new_handler_call = mock_launch_cluster.call_args_list[1]
-
-        assert old_handler_call == new_handler_call
+        assert mock_launch_cluster.call_count == 1
 
     @patch("emr_launcher.handler.sm_retrieve_secrets")
     @patch("emr_launcher.handler.emr_launch_cluster")

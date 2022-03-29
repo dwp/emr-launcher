@@ -111,5 +111,5 @@ you enter a new terminal session!
 ## Azkaban
 Azkaban targets the emr-launcher when launching clusters.  There are two azkaban emr job types:
  * [EMRStep](https://github.com/dwp/dataworks-hardened-images/blob/master/azkaban-executor/azkaban-emr-jobtype/src/main/java/uk/gov/dwp/dataworks/azkaban/jobtype/EMRStep.java) - targets existing clusters, but will launch a new cluster if required using the NEW handler
- * [EmrLauncherJob](https://github.com/dwp/dataworks-hardened-images/blob/master/azkaban-executor/azkaban-emr-jobtype/src/main/java/uk/gov/dwp/dataworks/azkaban/jobtype/EmrLauncherJob.java) - starts a dedicated cluster each time the job runs, uses the OLD handler
+ * [EmrLauncherJob](https://github.com/dwp/dataworks-hardened-images/blob/master/azkaban-executor/azkaban-emr-jobtype/src/main/java/uk/gov/dwp/dataworks/azkaban/jobtype/EmrLauncherJob.java) - starts a dedicated cluster each time the job runs, uses the NEW handler
 
