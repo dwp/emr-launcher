@@ -150,7 +150,6 @@ class TestE2E:
         )
 
         assert mock_launch_cluster.call_count == 1
-        mock_tag_cluster.assert_called_once()
 
     @patch("emr_launcher.handler.sm_retrieve_secrets")
     @patch("emr_launcher.handler.emr_launch_cluster")
