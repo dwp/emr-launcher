@@ -99,6 +99,9 @@ def handler(event=None, context=None) -> dict:
     logger = configure_log()
     logger.info(payload)
 
+    if PAYLOAD_CORRELATION_ID in payload and PAYLOAD_S3_PREFIX in payload:
+        raise ValueError("Data passed it triggeres old handler which has now been depracated. Please use new handler") 
+
     if (
         PAYLOAD_EVENT_NOTIFICATION_RECORDS in payload
         and PAYLOAD_BODY in payload[PAYLOAD_EVENT_NOTIFICATION_RECORDS][0]
