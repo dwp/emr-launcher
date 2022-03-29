@@ -127,7 +127,8 @@ class TestE2E:
     ):
 
         mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
-        handler({"correlation_id": "test", "s3_prefix": "test"})
+        with pytest.raises(ValueError):
+            handler({"correlation_id": "test", "s3_prefix": "test"})
 
         assert mock_launch_cluster.call_count == 0
         old_handler_call = mock_launch_cluster.call_args_list[0]
