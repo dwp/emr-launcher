@@ -102,7 +102,7 @@ def read_config(
 def get_payload(event: dict):
     if event is None:
         return {}
-    elif "Records" in event and "Sns" in ["Records"][0]:
+    elif "Records" in event and "Sns" in event["Records"][0]:
         json_payload = event["Records"][0]["Sns"]["Message"]
         return json.loads(json_payload)
     else:
