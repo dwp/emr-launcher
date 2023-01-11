@@ -33,25 +33,10 @@ jobs:
           echo $VERSION_NUMBER > version && zip -ur emr-launcher.zip version
           mv emr-launcher.zip emr-launcher-$VERSION_NUMBER.zip
 
-      - persist_to_workspace:
-        root: .
-        paths:
-        - emr-launcher-*.zip
-        - Pipfile
-
-
-  integration-test:
-    runs-on: ubuntu-latest
-    needs: [build-app]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Run tests
         run: |
           pip install -r requirements.txt
           python -m pytest -v
-
 
   get-publish-version:
     runs-on: ubuntu-latest
@@ -88,7 +73,7 @@ jobs:
   
   publish-github-release:
     runs-on: ubuntu-latest
-    needs: [build-app, get-publish-version, integration-test]
+    needs: [build-app, get-publish-version]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
