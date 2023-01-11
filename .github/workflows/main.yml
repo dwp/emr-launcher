@@ -36,7 +36,6 @@ jobs:
           VERSION_NUMBER=$(echo $VERSION | sed 's/^v\(.*\)$/\1/')
           echo $VERSION_NUMBER > version && zip -ur emr-launcher.zip version
           mv emr-launcher.zip emr-launcher-$VERSION_NUMBER.zip
-
       - name: Run tests
         run: |
           pip install -r requirements.txt
