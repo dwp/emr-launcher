@@ -41,6 +41,15 @@ jobs:
           pip install -r requirements.txt
           python -m pytest -v
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: emr-launcher-$VERSION_NUMBER.zip
+          path: ./
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Pipfile
+          path: /home/runner/work/emr-launcher/emr-launcher/Pipfile
+
   get-publish-version:
     runs-on: ubuntu-latest
     outputs:
