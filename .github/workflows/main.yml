@@ -95,7 +95,7 @@ jobs:
       - name: Download EMRLauncher
         uses: actions/download-artifact@v3
         with:
-          name: emr-launcher-$publish-version.zip
+          name: emr-launcher.zip
 
       - name: Download Pifile
         uses: actions/download-artifact@v3
