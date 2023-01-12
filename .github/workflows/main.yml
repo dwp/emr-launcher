@@ -48,7 +48,7 @@ jobs:
         with:
           name: emr-launcher-$VERSION_NUMBER.zip
           path: /home/downloads/emr-launcher-$VERSION_NUMBER.zip
-          
+
       - uses: actions/upload-artifact@v3
         with:
           name: Pipfile
@@ -93,6 +93,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Download EMRLauncher
+        uses: actions/download-artifact@v3
+        with:
+          name: emr-launcher-$publish-version.zip
+
+      - name: Download Pifile
+        uses: actions/download-artifact@v3
+        with:
+          name: Pipfile
       
       - name: Create Release
         id: create_release
@@ -111,8 +121,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: emr-launcher-$VERSION_NUMBER.zip
-          asset_name: emr-launcher-$VERSION_NUMBER.zip
+          asset_path: emr-launcher-$publish_version.zip
+          asset_name: emr-launcher-$publish_version.zip
 
       - name: upload Pipfile
         uses: actions/upload-release-asset@v3
