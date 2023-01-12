@@ -44,7 +44,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: emr-launcher-*.zip
-          path: .
+          path: ./
 
       - uses: actions/upload-artifact@v3
         with:
