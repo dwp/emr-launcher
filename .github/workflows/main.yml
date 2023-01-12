@@ -50,7 +50,6 @@ jobs:
         with:
           name: emr-launcher.zip
           path: emr-launcher.zip
-          
 
   get-publish-version:
     runs-on: ubuntu-latest
@@ -114,7 +113,6 @@ jobs:
           prerelease: false
 
       - name: upload emr-launcher file
-        uses: actions/upload-release-asset@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -123,7 +121,7 @@ jobs:
           asset_name: emr-launcher-$publish_version.zip
 
       - name: upload Pipfile
-        uses: actions/upload-release-asset@v3
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
