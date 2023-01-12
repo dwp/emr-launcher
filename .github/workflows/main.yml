@@ -35,21 +35,24 @@ jobs:
           VERSION=$(echo $LATEST_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
           VERSION_NUMBER=$(echo $VERSION | sed 's/^v\(.*\)$/\1/')
           echo $VERSION_NUMBER > version && zip -ur emr-launcher.zip version
-          mkdir /downloads
-          mv /home/runner/work/emr-launcher/emr-launcher/Pipfile /downloads/Pipfile
-          mv emr-launcher.zip /downloads/emr-launcher-$VERSION_NUMBER.zip
+          mkdir /home/downloads
+          mv /home/runner/work/emr-launcher/emr-launcher/Pipfile /home/downloads/Pipfile
+          mv emr-launcher.zip /home/downloads/emr-launcher-$VERSION_NUMBER.zip
+
       - name: Run tests
         run: |
           pip install -r requirements.txt
           python -m pytest -v
+
       - uses: actions/upload-artifact@v3
         with:
           name: emr-launcher-$VERSION_NUMBER.zip
-          path: /downloads/emr-launcher-$VERSION_NUMBER.zip
+          path: /home/downloads/emr-launcher-$VERSION_NUMBER.zip
+          
       - uses: actions/upload-artifact@v3
         with:
           name: Pipfile
-          path: /downloads/Pipfile
+          path: /home/downloads/Pipfile
 
   get-publish-version:
     runs-on: ubuntu-latest
