@@ -38,10 +38,12 @@ jobs:
           mkdir /downloads
           mv /home/runner/work/emr-launcher/emr-launcher/Pipfile /downloads/Pipfile
           mv emr-launcher.zip /downloads/emr-launcher-$VERSION_NUMBER.zip
+
       - name: Run tests
         run: |
           pip install -r requirements.txt
           python -m pytest -v
+
       - uses: actions/upload-artifact@v3
         with:
           name: emr-launcher-$VERSION_NUMBER.zip
@@ -50,6 +52,7 @@ jobs:
         with:
           name: Pipfile
           path: /downloads/Pipfile
+          
 
   get-publish-version:
     runs-on: ubuntu-latest
