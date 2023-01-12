@@ -34,7 +34,7 @@ emr-launcher.zip: clean
 	cp -r emr_launcher dist
 	pipenv install && \
 	VENV=$$(pipenv --venv) && \
-	cp -rf $${VENV}/lib/python3.7/site-packages/* dist/
+	cp -rf $${VENV}/lib/python3.10/site-packages/* dist/
 	cp -rf docs dist/docs
 	cd dist && zip -qr ../$@ .
 
