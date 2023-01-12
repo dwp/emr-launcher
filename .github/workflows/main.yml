@@ -120,7 +120,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: emr-launcher.zip
-          asset_name: emr-launcher-$publish_version.zip
+          asset_name: emr-launcher-${{ needs.get-publish-version.outputs.publish-version }}.zip
           asset_content_type: application/gzip
 
       - name: upload Pipfile
