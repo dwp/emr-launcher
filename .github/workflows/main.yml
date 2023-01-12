@@ -35,9 +35,6 @@ jobs:
           VERSION=$(echo $LATEST_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
           VERSION_NUMBER=$(echo $VERSION | sed 's/^v\(.*\)$/\1/')
           echo $VERSION_NUMBER > version && zip -ur emr-launcher.zip version
-          mkdir /home/downloads
-          mv /home/runner/work/emr-launcher/emr-launcher/Pipfile /home/downloads/Pipfile
-          mv emr-launcher.zip /home/downloads/emr-launcher-$VERSION_NUMBER.zip
 
       - name: Run tests
         run: |
@@ -46,13 +43,14 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: emr-launcher-$VERSION_NUMBER.zip
-          path: /home/downloads/emr-launcher-$VERSION_NUMBER.zip
+          name: Pipfile
+          path: /home/runner/work/emr-launcher/emr-launcher/Pipfile
 
       - uses: actions/upload-artifact@v3
         with:
-          name: Pipfile
-          path: /home/downloads/Pipfile
+          name: emr-launcher.zip
+          path: emr-launcher.zip
+
 
   get-publish-version:
     runs-on: ubuntu-latest
@@ -121,7 +119,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: emr-launcher-$publish_version.zip
+          asset_path: emr-launcher.zip
           asset_name: emr-launcher-$publish_version.zip
 
       - name: upload Pipfile
