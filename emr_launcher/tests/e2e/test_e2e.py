@@ -125,7 +125,6 @@ class TestE2E:
         mock_launch_cluster: MagicMock,
         mock_retrieve_secrets: MagicMock,
     ):
-
         mock_retrieve_secrets.side_effect = mock_retrieve_secrets_side_effect
         with pytest.raises(ValueError):
             handler({"correlation_id": "test", "s3_prefix": "test"})
