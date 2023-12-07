@@ -1,3 +1,5 @@
+# DO NOT USE THIS REPO - MIGRATED TO GITLAB
+
 # emr-launcher
 Lambda based EMR Cluster Launcher
 
